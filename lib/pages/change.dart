@@ -24,6 +24,13 @@ class _ChangeState extends State<Change> {
   TextEditingController _rePassword = TextEditingController();
 
   @override
+  initState() {
+    super.initState();
+    // relogin
+    // relogin();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Change.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize();

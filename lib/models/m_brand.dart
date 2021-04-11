@@ -1,12 +1,12 @@
-class M_User {
+class M_Brand {
   final _body;
   final bool _status;
   final _msg;
 
-  M_User(this._status, this._body, this._msg);
+  M_Brand(this._status, this._body, this._msg);
 
-  factory M_User.fromJson(Map<String, dynamic> map) {
-    return M_User(
+  factory M_Brand.fromJson(Map<String, dynamic> map) {
+    return M_Brand(
       map['status'], 
       map['data'],
       map['message']
@@ -34,7 +34,7 @@ class M_User {
     return this._body;
   }
 
-  dynamic getSingleData() {
-    return this._body[0];
+  List<dynamic> getListData() {
+    return this._body;
   }
 }

@@ -84,10 +84,11 @@ class UserRepo {
     }
   }
 
-  Future<M_User> update(data, id) async{
+  Future<M_User> update(data) async{
     
     Session _session = new Session();
     String token = await _session.getString('token');
+    int id = await _session.getInt('id');
 
     Map<String, String> header = {
       "Content-Type": "application/json",

@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
     Npl.tag : (context) => Npl(),
     BuyNpl.tag : (context) => BuyNpl(),
     Profile.tag : (context) => Profile(),
-    Change.tag : (context) => Change() 
+    Change.tag : (context) => Change(),
   };
   // This widget is the root of your application.
   @override

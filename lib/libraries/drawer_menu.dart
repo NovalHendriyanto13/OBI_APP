@@ -10,6 +10,7 @@ class DrawerMenu {
 
   void logout() async {
     Session _session = new Session();
+    _session.setInt('id', 0);
     _session.setString('token', '');
     _session.setString('username', '');
     _session.setString('pass', '');

@@ -35,5 +35,11 @@ class Session {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
   }
+
+  void reLogin(String msg) async{
+    if (msg == 'jwt expired') {
+      
+    }
+  }
   
 }

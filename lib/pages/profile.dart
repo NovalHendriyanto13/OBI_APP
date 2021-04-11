@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
@@ -39,11 +41,25 @@ class _ProfileState extends State<Profile> {
   getProfile() async{
     _userRepo.detail().then((value) {
       bool status = value.getStatus();
+      
       if (status == true) {
-        Map data = value.getData();
-        setState(() {
-          _name = data['Nama'];
-        });
+        var data = value.getSingleData();
+
+        data = data.toString();
+
+        print(data["Nama"]);
+
+        _name = TextEditingController(text: data['Nama']);
+        _email = TextEditingController(text: data['Email']);
+        _mobile = TextEditingController(text: data['NoTelp']);
+        _address = TextEditingController(text: data['Alamat']);
+        _ktp = TextEditingController(text: data['NoKTP']);
+        _npwp = TextEditingController(text: data['NoNPWP']);
+        _bank = TextEditingController(text: data['Bank']);
+        _noRek = TextEditingController(text: data['NoRek']);
+        _branch = TextEditingController(text: data['Cabang']);
+        _anRek = TextEditingController(text: data['AtasNama']);
+
       }
       else {
         Map errMessage = value.getMessage();
@@ -77,15 +93,15 @@ class _ProfileState extends State<Profile> {
       ),
     );
 
-    final phone = TextFormField(
-      controller: _phone,
-      keyboardType: TextInputType.phone,
-      decoration: InputDecoration(
-        hintText: 'No Telepon',
-        contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
-      ),
-    );
+    // final phone = TextFormField(
+    //   controller: _phone,
+    //   keyboardType: TextInputType.phone,
+    //   decoration: InputDecoration(
+    //     hintText: 'No Telepon',
+    //     contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+    //     border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
+    //   ),
+    // );
 
     final mobile = TextFormField(
       controller: _mobile,
@@ -99,7 +115,7 @@ class _ProfileState extends State<Profile> {
 
     final address = TextFormField(
       controller: _address,
-      keyboardType: TextInputType.text,
+      keyboardType: TextInputType.streetAddress,
       decoration: InputDecoration(
         hintText: 'Alamat',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -190,8 +206,32 @@ class _ProfileState extends State<Profile> {
         ),
         backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
       ),
-      onPressed: () => {
+      onPressed: () {
+        final data = jsonEncode({
+          "Nama": _name.text.toString(),
+          "Email": _email.text.toString(),
+          "NoTelp": _mobile.text.toString(),
+          "Alamat": _address.text.toString(),
+          "NoKTP": _ktp.text.toString(),
+          "NoNPWP": _npwp.text.toString(), 
+          "Bank": _bank.text.toString(),
+          "NoRek": _noRek.text.toString(),
+          "Cabang": _branch.text.toString(),
+          "AtasNama": _anRek.text.toString()
+        });
 
+        print(data.toString());
+        _userRepo.update(data).then((value) {
+          bool status = value.getStatus();
+          if (status == true) {
+            Toast.show('Profile Berhasil Di Update', context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM);
+          }
+          else {
+            Map errMessage = value.getMessage();
+            String msg = errMessage['message'];
+            Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red.shade50);
+          }
+        });
       }, 
     );
 
@@ -213,8 +253,6 @@ class _ProfileState extends State<Profile> {
             email,
             SizedBox(height: 8.0),
             mobile,
-            SizedBox(height: 8.0),
-            phone,
             SizedBox(height: 8.0),
             address,
             SizedBox(height: 8.0),

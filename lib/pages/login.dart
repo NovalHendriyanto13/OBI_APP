@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 import 'package:obi_mobile/libraries/session.dart';
+import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/pages/reg.dart';
 import 'package:obi_mobile/pages/forgot.dart';
 import 'package:obi_mobile/pages/home.dart';
@@ -18,6 +19,7 @@ class _LoginState extends State<Login> {
 
   UserRepo _userRepo = UserRepo();
   Session _session = Session();
+  RefreshToken _refreshToken = RefreshToken();
 
   TextEditingController _username = TextEditingController();
   TextEditingController _password = TextEditingController();
@@ -78,7 +80,7 @@ class _LoginState extends State<Login> {
               if (isLogin == true) {
                 Map data = value.getData();
                 token = data['token'];
-                id = data['id'];
+                id = data['data']['id'];
                 email = data['data']['email'];
                 name = data['data']['name'];
                 expireIn = data['expire_in'];
@@ -92,13 +94,15 @@ class _LoginState extends State<Login> {
                 _session.setInt('expireIn', expireIn);
                 _session.setBool('isLogin', isLogin);
 
-                Toast.show('Selamat Datang,' + name, context, duration: Toast.LENGTH_LONG , gravity: Toast.TOP);
+                _refreshToken.run();
+                
+                Toast.show('Selamat Datang,' + name, context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>Home()));
               }
               else {
                 Map errMessage = value.getMessage();
                 String msg = errMessage['message'];
-                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
+                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red.shade50);
               }
             });
           },
@@ -162,7 +166,7 @@ class _LoginState extends State<Login> {
             Align(
               alignment: Alignment.center,
               child: Container(
-                child: Text('Silakan Masukan Username dan Password', style: TextStyle(fontSize: 15)),
+                child: Text('Silakan Masukan Username dan Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
             SizedBox(height:10.0),
