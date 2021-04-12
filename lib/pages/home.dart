@@ -32,10 +32,10 @@ class _HomeState extends State<Home> {
     super.initState();
 
     _dataAuction = _auctionRepo.list();
-    _loadList();
+    _loadData();
   }
 
-  _loadList() async{
+  _loadData() async{
     _brandRepo.list().then((value) {
       bool status = value.getStatus();
       if (status == true) {

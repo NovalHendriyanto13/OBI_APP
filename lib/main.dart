@@ -8,6 +8,7 @@ import 'package:obi_mobile/pages/npl.dart';
 import 'package:obi_mobile/pages/buy_npl.dart';
 import 'package:obi_mobile/pages/profile.dart';
 import 'package:obi_mobile/pages/change.dart';
+import 'package:obi_mobile/pages/bid.dart';
 
 void main() {
   runApp(MyApp());
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
     BuyNpl.tag : (context) => BuyNpl(),
     Profile.tag : (context) => Profile(),
     Change.tag : (context) => Change(),
+    Bid.tag : (context) => Bid()
   };
   // This widget is the root of your application.
   @override

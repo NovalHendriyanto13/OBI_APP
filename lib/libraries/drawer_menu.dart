@@ -5,6 +5,7 @@ import 'package:obi_mobile/pages/home.dart';
 import 'package:obi_mobile/pages/login.dart';
 import 'package:obi_mobile/pages/npl.dart';
 import 'package:obi_mobile/pages/profile.dart';
+import 'package:obi_mobile/pages/bid.dart';
 
 class DrawerMenu {
 
@@ -91,7 +92,13 @@ class DrawerMenu {
             leading: Icon(Icons.sync_alt_outlined),
             title: Text('My Bid'),
             onTap: () {
-
+              if (pageTag == Bid.tag) {
+                Navigator.pop(context);
+              }
+              else {
+                Navigator.pop(context);
+                Navigator.of(context).pushNamed(Bid.tag);
+              }
             }
           ),
           ListTile(
