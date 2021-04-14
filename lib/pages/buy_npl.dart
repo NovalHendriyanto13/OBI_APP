@@ -1,5 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:obi_mobile/models/m_auction.dart';
+import 'package:obi_mobile/repository/auction_repo.dart';
 
 class BuyNpl extends StatefulWidget {
   static String tag = 'buy-npl-page';
@@ -17,8 +19,24 @@ class _BuyNplState extends State<BuyNpl> {
   TextEditingController _totalNpl = TextEditingController();
   TextEditingController _totalPayment = TextEditingController();
   TextEditingController _an = TextEditingController();
+  Future<M_Auction> 
+  List<String> _dataType = <String>['Mobil','Motor','Alat Berat','Barang Inventaris'];
+  String _selectedType = 'Mobil';
+  List _dataAuction = [{
+    "IdAuctions": ""
+  }];
+  String _selectedAuction = "";
 
   bool _toc = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  _loadData() async {
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,22 +53,32 @@ class _BuyNplState extends State<BuyNpl> {
 
     final noRek = TextFormField(
       controller: _noRek,
-        keyboardType: TextInputType.text,
-        decoration: InputDecoration(
-          hintText: 'No Rekening Deposit',
-          contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
-        ),
+      keyboardType: TextInputType.text,
+      decoration: InputDecoration(
+        hintText: 'No Rekening Deposit',
+        contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
+      ),
     );
 
-    final type = TextFormField(
-      controller: _type,
-        keyboardType: TextInputType.text,
-        decoration: InputDecoration(
-          hintText: 'Jenis NPL Lelang',
-          contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
-        ),
+    final type = DropdownButtonFormField(
+      items: _dataType.map((e) {
+        return DropdownMenuItem(
+          child: Text(e.toString()),
+          value: e.toString()
+        );
+      }).toList(),
+      value: _selectedType,
+      onChanged: (value) {
+        setState(() {
+          _selectedType = value;
+        });
+      },
+      decoration: InputDecoration(
+        hintText: 'Jenis NPL Lelang',
+        contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
+      ),
     );
 
     final totalNpl = TextFormField(
