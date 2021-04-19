@@ -12,19 +12,43 @@ class Splash extends StatefulWidget {
   _SplashState createState() => _SplashState();
 }
 
-class _SplashState extends State<Splash> {
+class _SplashState extends State<Splash> with TickerProviderStateMixin {
+
+  // variable
   String _title = config.APP_NAME;
-  String _versionCode = '1.0';
+  String _versionCode = 'v.1.0';
   final delay = 5;
   // bool _isLogin;
 
+  // class
   Session _session = Session();
+  // AnimationController _controller;
+  // Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
 
+    // _controller = AnimationController(
+    //   duration: const Duration(seconds: 2),
+    //   vsync: this,
+    //   value: 0.1
+    // );
+    
+    // _animation = CurvedAnimation(
+    //   parent: _controller,
+    //   curve: Curves.fastOutSlowIn,
+    // );
+
+    // _controller.forward();
     loadWidget();
+    
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // _controller.dispose();
   }
 
   loadWidget() async {
@@ -45,8 +69,9 @@ class _SplashState extends State<Splash> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
-      body: InkWell(
+      body: Container(
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
@@ -56,38 +81,51 @@ class _SplashState extends State<Splash> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text(_title),
+                    // ScaleTransition(
+                    //   scale: _animation,
+                    //   child: Padding(
+                    //     padding: EdgeInsets.all(8.0),
+                    //     child: CircleAvatar(
+                    //       backgroundColor: Colors.transparent,
+                    //       radius: 48.0,
+                    //       child: Image.asset('assets/images/logo.png'),
+                    //     ),
+                    //   ),
+                    // ),
+                    Text(_title, style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
                     Padding(
                       padding: const EdgeInsets.only(top: 10.0)
                     ),
-                    CircularProgressIndicator()
+                    SizedBox(height: 20.0),
+                    SizedBox(
+                      width: 100.0,
+                      child: LinearProgressIndicator(),
+                    ),
                   ],
                 ),
               ),
             ),
-            // Expanded(
-            //   child: Column(
-            //     children: <Widget>[
-            //       CircularProgressIndicator(),
-            //       Container(
-            //         height:10
-            //       ),
-            //       Row(
-            //         mainAxisAlignment: MainAxisAlignment.spaceAround,
-            //         children: <Widget>[
-            //           Spacer(),
-            //           Text(_versionCode),
-            //           Spacer(
-            //             flex: 4
-            //           ),
-            //           Text('Android'),
-            //           Spacer()
-            //         ],
-            //       )
-            //     ],
-            //   )
-            // )
-          ],),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: 10.0, bottom: 10.0),
+                child: Align(
+                  alignment: FractionalOffset.bottomRight,
+                  child: Text(_versionCode, style: TextStyle(color: Colors.grey.shade400))
+                )
+              )
+            )
+          ],
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end:Alignment(0.8, 0.0),
+            colors: [
+              Colors.red.shade400,
+              Colors.grey.shade200
+            ]
+          )
+        ),
       ),
     );
   }

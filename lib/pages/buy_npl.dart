@@ -13,25 +13,29 @@ class BuyNpl extends StatefulWidget {
 
 class _BuyNplState extends State<BuyNpl> {
   
+  // repo and model
+  AuctionRepo _auctionRepo = new AuctionRepo();
+
+  // controller
   TextEditingController _auctions = TextEditingController();
   TextEditingController _noRek = TextEditingController();
   TextEditingController _type = TextEditingController();
   TextEditingController _totalNpl = TextEditingController();
   TextEditingController _totalPayment = TextEditingController();
   TextEditingController _an = TextEditingController();
-  Future<M_Auction> 
+  
+  // variable
+  Future<M_Auction> _dataAuction;
   List<String> _dataType = <String>['Mobil','Motor','Alat Berat','Barang Inventaris'];
-  String _selectedType = 'Mobil';
-  List _dataAuction = [{
-    "IdAuctions": ""
-  }];
+  String _selectedType = 'Mobil'; 
   String _selectedAuction = "";
-
   bool _toc = false;
 
   @override
   void initState() {
     super.initState();
+
+    _dataAuction = _auctionRepo.list();
   }
 
   _loadData() async {

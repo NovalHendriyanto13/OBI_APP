@@ -10,6 +10,8 @@ import 'package:obi_mobile/repository/brand_repo.dart';
 
 class Home extends StatefulWidget {
   static String tag = 'home-page';
+  static String name = "Home";
+  
   @override
   _HomeState createState() => _HomeState();
 }
@@ -20,9 +22,7 @@ class _HomeState extends State<Home> {
   AuctionRepo _auctionRepo = new AuctionRepo();
   BrandRepo _brandRepo = new BrandRepo();
   Future<M_Auction> _dataAuction;
-  List _dataBrand = [{
-    "Merk":"Semua Merk"
-  }];
+  List _dataBrand = [{"Merk":"Semua Merk"}];
   List<int> _dataYear = List<int>.generate(30, (index) => 2021-index);
   String _selectedBrand = "";
   int _selectedYear = 2021;
@@ -50,7 +50,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Home.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize();
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context);
     SearchBar _searchBar = SearchBar(context, true, true);
 
     Widget _locations = Expanded(
@@ -58,11 +58,16 @@ class _HomeState extends State<Home> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Jadwal Lelang', 
-            style: TextStyle(
-              fontSize: 15.0,
-              fontWeight: FontWeight.bold,
-            )),
+          Padding(
+            padding: EdgeInsets.only(top:12),
+            child: Text('Jadwal Lelang', 
+              style: TextStyle(
+                fontSize: 15.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade600
+              )
+            ),
+          ),
           Padding(
             padding: EdgeInsets.only(top: 12),
             child: RichText(
@@ -79,7 +84,7 @@ class _HomeState extends State<Home> {
     Widget _schedule = Expanded(
       child: SizedBox(
         // color: Colors.blueGrey.shade50,
-        height: 350.0,
+        height: 300.0,
         child: FutureBuilder<M_Auction>(
           future: _dataAuction,
           builder: (context, snapshot) {
@@ -114,7 +119,7 @@ class _HomeState extends State<Home> {
                         ],
                       ),
                       onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(auction: _data[index])));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: _data[index])));
                       },
                     ), 
                   );
@@ -143,13 +148,14 @@ class _HomeState extends State<Home> {
           value: v, 
         );
       }).toList(),
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(
-            const Radius.circular(8.0),
-          ),
-        ),
-      ),
+      hint: Text('Pilih Merk'),
+      // decoration: InputDecoration(
+      //   border: OutlineInputBorder(
+      //     borderRadius: const BorderRadius.all(
+      //       const Radius.circular(5.0),
+      //     ),
+      //   ),
+      // ),
       onChanged: (selected) {
         setState(() {
           _selectedBrand = selected;
@@ -160,18 +166,26 @@ class _HomeState extends State<Home> {
 
     final year = DropdownButtonFormField(
       items: _dataYear.map((e) {
+        String v;
+        if (e == 0) {
+          v = "Semua Tahun";
+        }
+        else {
+          v = e.toString();
+        }
         return DropdownMenuItem(
-          child: Text(e.toString()),
+          child: Text(v),
           value: e, 
         );
       }).toList(),
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(
-            const Radius.circular(8.0),
-          ),
-        ),
-      ),
+      // decoration: InputDecoration(
+      //   border: OutlineInputBorder(
+      //     borderRadius: const BorderRadius.all(
+      //       const Radius.circular(5.0),
+      //     ),
+      //   ),
+      // ),
+      hint: Text('Pilih Tahun'),
       onChanged: (selected) {
         setState(() {
           _selectedYear = selected;
@@ -180,30 +194,24 @@ class _HomeState extends State<Home> {
       value: _selectedYear,
     );
 
-    final button = TextButton(
+    final button = MaterialButton(
       child: Text('Cari', 
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold
         )
       ),
-      style: ButtonStyle(
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18.0),
-            side: BorderSide(color:Colors.blue)
-          )
-        ),
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-      ),
+      color: Colors.blue,
+      height: 40.0,
+      minWidth: double.infinity,
       onPressed: () {}
     );
 
     Widget _filterItems = Card(
-      margin: EdgeInsets.all(12.0),
+      margin: EdgeInsets.all(10.0),
       color: Colors.white,
       child: Padding(
-        padding: EdgeInsets.all(12.0),
+        padding: EdgeInsets.all(10.0),
         child: Column(
           children: [
             Row(
@@ -218,7 +226,7 @@ class _HomeState extends State<Home> {
               children: [
                 Expanded(child: merk),
                 SizedBox(width: 10.0),
-                Expanded(child: merk)
+                // Expanded(child: merk)
               ],
             ),
             SizedBox(height: 10.0),
@@ -228,22 +236,16 @@ class _HomeState extends State<Home> {
       ),
     );
 
-    final buttonNpl = TextButton(
+    final buttonNpl = MaterialButton(
       child: Text('Beli NPL', 
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold
         )
       ),
-      style: ButtonStyle(
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18.0),
-            side: BorderSide(color:Colors.blue)
-          )
-        ),
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-      ),
+      color: Colors.blue,
+      height: 40.0,
+      minWidth: double.infinity,
       onPressed: () {
         Navigator.of(context).pushNamed(BuyNpl.tag);
       }
@@ -251,9 +253,9 @@ class _HomeState extends State<Home> {
 
     Widget buyNpl = Card(
       color: Colors.blue.shade300,
-      margin: EdgeInsets.all(12.0),
+      margin: EdgeInsets.all(10.0),
       child: Padding(
-        padding: EdgeInsets.all(12.0),
+        padding: EdgeInsets.all(10.0),
         child: Column(
           children: <Widget>[
             Text("Mudah Beli NPL", style: TextStyle(
@@ -275,7 +277,7 @@ class _HomeState extends State<Home> {
     
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text(Home.name),
         backgroundColor: Colors.red,
         actions: _searchBar.build(),
       ),
@@ -292,11 +294,11 @@ class _HomeState extends State<Home> {
             SizedBox(height:10.0),
             _schedule,
             SizedBox(height:20.0),
-            Text("Cari Barang", style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold)),
+            Text("Cari Barang", style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
             SizedBox(height:10.0),
             _filterItems,
             SizedBox(height:20.0),
-            Text("Pembelian NPL", style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold)),
+            Text("Pembelian NPL", style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
             SizedBox(height:10.0),
             buyNpl
           ],

@@ -33,7 +33,7 @@ class _ChangeState extends State<Change> {
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Change.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize();
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context);
 
     final oldPassword = TextFormField(
       controller: _oldPassword,

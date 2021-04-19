@@ -24,6 +24,8 @@ class _LoginState extends State<Login> {
   TextEditingController _username = TextEditingController();
   TextEditingController _password = TextEditingController();
 
+  int _loginProcessState = 0;
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +42,22 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+
+    Widget buttonText() {
+      if(_loginProcessState == 1) {
+        return CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        );
+      }  
+      
+      return new Text('Log In',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold
+        )
+      );
+    }
+
     final username = TextFormField(
       controller: _username,
       keyboardType: TextInputType.text,
@@ -64,7 +82,7 @@ class _LoginState extends State<Login> {
 
     final btnLogin = Padding(
       padding: EdgeInsets.symmetric(vertical: 16.0),
-      child: TextButton(
+      child: MaterialButton(
           onPressed: () {
             // _session.setBool('isLogin', true);
             // Navigator.of(context).pushNamed(Home.tag);
@@ -74,6 +92,10 @@ class _LoginState extends State<Login> {
             String email, name, token;
             int id, expireIn;
             bool isLogin = false;
+
+            setState(() {
+              _loginProcessState = 1;
+            });
 
             _userRepo.login(uname, upass).then((value) {
               isLogin = value.getStatus();
@@ -102,25 +124,18 @@ class _LoginState extends State<Login> {
               else {
                 Map errMessage = value.getMessage();
                 String msg = errMessage['message'];
+                print(msg);
                 Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red.shade50);
               }
+
+              setState(() {
+                _loginProcessState = 0;
+              });
             });
           },
-          child: Text('Log In',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold
-            )
-          ),
-          style: ButtonStyle(
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18.0),
-                side: BorderSide(color:Colors.blue),
-              )
-            ),
-            backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-          ),
+          child: buttonText(),
+          color: Colors.blue,
+          height: 48.0,
       ),
     );
 

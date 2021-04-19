@@ -33,4 +33,8 @@ class M_Area {
   Map<String, dynamic> getData() {
     return this._body;
   }
+
+  List<dynamic> getListData() {
+    return this._body;
+  }
 }

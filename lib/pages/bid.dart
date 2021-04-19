@@ -23,7 +23,7 @@ class _BidState extends State<Bid> {
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Bid.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize();
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context);
 
     return Scaffold(
       appBar: AppBar(
