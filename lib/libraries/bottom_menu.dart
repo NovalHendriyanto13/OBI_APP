@@ -44,7 +44,7 @@ class BottomMenu {
           backgroundColor: Colors.red,     
         )
       ],
-      selectedItemColor: Colors.red.shade900,
+      selectedItemColor: Colors.white,
       onTap: (index) {
         // setState() {
           _currentIndex = index;

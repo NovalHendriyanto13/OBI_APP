@@ -43,7 +43,7 @@ class AuctionRepo {
     };
 
     final response = await http.post(
-      Uri.http(apiUrl, 'user/' + id.toString()),
+      Uri.http(apiUrl, 'auction_detail/' + id.toString()),
       headers: header,
     );
 
