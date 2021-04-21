@@ -29,7 +29,7 @@ class _AreaState extends State<Area> {
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Area.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context);
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Area.tag);
 
     final _dataList = Expanded(
     child: FutureBuilder<M_Area>(

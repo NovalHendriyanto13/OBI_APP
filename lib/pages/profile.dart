@@ -71,7 +71,7 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Profile.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context);
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, null);
 
     final name = TextFormField(
       controller: _name,

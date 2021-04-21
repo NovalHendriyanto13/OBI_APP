@@ -30,7 +30,7 @@ class _NplState extends State<Npl> {
   Widget build(BuildContext context) {
 
     Drawer _menu = _drawerMenu.initialize(context, Npl.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context);
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, null);
 
     final addButton = FloatingActionButton(
       tooltip: 'Beli NPL',

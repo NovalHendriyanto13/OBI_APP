@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/repository/user_repo.dart';
+import 'package:obi_mobile/pages/home.dart';
 import 'package:toast/toast.dart';
 
 class Change extends StatefulWidget {
@@ -33,7 +34,7 @@ class _ChangeState extends State<Change> {
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Change.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context);
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Home.tag);
 
     final oldPassword = TextFormField(
       controller: _oldPassword,

@@ -5,6 +5,7 @@ import 'package:obi_mobile/libraries/search_bar.dart';
 import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/pages/buy_npl.dart';
 import 'package:obi_mobile/pages/auction_detail.dart';
+import 'package:obi_mobile/pages/auction_unit.dart';
 import 'package:obi_mobile/repository/auction_repo.dart';
 import 'package:obi_mobile/repository/brand_repo.dart';
 
@@ -25,8 +26,10 @@ class _HomeState extends State<Home> {
   List _dataBrand = [{"Merk":"Semua Merk"}];
   List<int> _dataYear = List<int>.generate(30, (index) => 2021-index);
   String _selectedBrand = "";
-  int _selectedYear = 2021;
-  
+  int _selectedYear = 0;
+  List _dataSeri = [{"Tipe":"Semua Seri"}];
+  String _selectedSeri = "";
+
   @override
   void initState() {
     super.initState();
@@ -50,35 +53,33 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Home.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context);
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Home.tag);
     SearchBar _searchBar = SearchBar(context, true, true);
 
-    Widget _locations = Expanded(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(top:12),
-            child: Text('Jadwal Lelang', 
-              style: TextStyle(
-                fontSize: 15.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade600
-              )
+    Widget _locations = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.only(top:12),
+          child: Text('Jadwal Lelang', 
+            style: TextStyle(
+              fontSize: 15.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600
+            )
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(top: 12),
+          child: RichText(
+            text: TextSpan(
+              text: 'Lihat Semua',
+              style: TextStyle(color: Colors.blue),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 12),
-            child: RichText(
-              text: TextSpan(
-                text: 'Lihat Semua',
-                style: TextStyle(color: Colors.blue),
-              ),
-            ),
-          )
-        ],
-      )
+        )
+      ],
     );
 
     Widget _schedule = Expanded(
@@ -114,12 +115,14 @@ class _HomeState extends State<Home> {
                         children: [
                           Text(_data[index]['Kota'], 
                             style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.red.shade400)),
-                          SizedBox(height: 10.0),
+                          // SizedBox(height: 10.0),
                           Text(_data[index]['TglAuctions'])
                         ],
                       ),
                       onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: _data[index])));
+                        if (_data[index]['Kota'] != '') {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: _data[index])));
+                        }
                       },
                     ), 
                   );
@@ -131,11 +134,14 @@ class _HomeState extends State<Home> {
             else if (snapshot.hasError) {
               return Text('Error...');
             }
-            return Text('Loading...');
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           },
         ) 
       )
     );
+    
 
     final merk = DropdownButtonFormField(
       items: _dataBrand.map((e) {
@@ -164,6 +170,33 @@ class _HomeState extends State<Home> {
       value: _selectedBrand,
     );
 
+    final series = DropdownButtonFormField(
+      items: _dataSeri.map((e) {
+        String v = e["Tipe"].toString();
+        if (e["Tipe"] == "Semua Tipe") {
+          v = "";
+        }
+        return DropdownMenuItem(
+          child: Text(e["Merk"]),
+          value: v, 
+        );
+      }).toList(),
+      hint: Text('Pilih Merk'),
+      // decoration: InputDecoration(
+      //   border: OutlineInputBorder(
+      //     borderRadius: const BorderRadius.all(
+      //       const Radius.circular(5.0),
+      //     ),
+      //   ),
+      // ),
+      onChanged: (selected) {
+        setState(() {
+          _selectedSeri = selected;
+        });
+      },
+      value: _selectedSeri,
+    );
+
     final year = DropdownButtonFormField(
       items: _dataYear.map((e) {
         String v;
@@ -178,13 +211,6 @@ class _HomeState extends State<Home> {
           value: e, 
         );
       }).toList(),
-      // decoration: InputDecoration(
-      //   border: OutlineInputBorder(
-      //     borderRadius: const BorderRadius.all(
-      //       const Radius.circular(5.0),
-      //     ),
-      //   ),
-      // ),
       hint: Text('Pilih Tahun'),
       onChanged: (selected) {
         setState(() {
@@ -204,7 +230,18 @@ class _HomeState extends State<Home> {
       color: Colors.blue,
       height: 40.0,
       minWidth: double.infinity,
-      onPressed: () {}
+      onPressed: () {
+        List params = [];
+
+        if (_selectedBrand != '') {
+          params.add({"Merk": _selectedBrand});
+        }
+
+        if (_selectedYear != 0) {
+          params.add({"Tahun": _selectedYear});
+        }
+        Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionUnit(), settings: RouteSettings(arguments: params)));
+      }
     );
 
     Widget _filterItems = Card(
@@ -224,7 +261,7 @@ class _HomeState extends State<Home> {
             SizedBox(height: 10.0),
             Row(
               children: [
-                Expanded(child: merk),
+                Expanded(child: series),
                 SizedBox(width: 10.0),
                 // Expanded(child: merk)
               ],

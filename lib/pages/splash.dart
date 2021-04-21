@@ -22,25 +22,25 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
 
   // class
   Session _session = Session();
-  // AnimationController _controller;
-  // Animation<double> _animation;
+  AnimationController _controller;
+  Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
 
-    // _controller = AnimationController(
-    //   duration: const Duration(seconds: 2),
-    //   vsync: this,
-    //   value: 0.1
-    // );
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+      value: 0.1
+    );
     
-    // _animation = CurvedAnimation(
-    //   parent: _controller,
-    //   curve: Curves.fastOutSlowIn,
-    // );
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.fastOutSlowIn,
+    );
 
-    // _controller.forward();
+    _controller.forward();
     loadWidget();
     
   }
@@ -48,7 +48,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
   @override
   void dispose() {
     super.dispose();
-    // _controller.dispose();
+    _controller.dispose();
   }
 
   loadWidget() async {
@@ -77,35 +77,33 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
           children: <Widget>[
             Expanded(
               flex: 7,
-              child: Container(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    // ScaleTransition(
-                    //   scale: _animation,
-                    //   child: Padding(
-                    //     padding: EdgeInsets.all(8.0),
-                    //     child: CircleAvatar(
-                    //       backgroundColor: Colors.transparent,
-                    //       radius: 48.0,
-                    //       child: Image.asset('assets/images/logo.png'),
-                    //     ),
-                    //   ),
-                    // ),
-                    Text(_title, style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0)
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ScaleTransition(
+                    scale: _animation,
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.transparent,
+                        radius: 48.0,
+                        child: Image.asset('assets/images/logo.png'),
+                      ),
                     ),
-                    SizedBox(height: 20.0),
-                    SizedBox(
-                      width: 100.0,
-                      child: LinearProgressIndicator(),
-                    ),
-                  ],
-                ),
+                  ),
+                  Text(_title, style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0)
+                  ),
+                  SizedBox(height: 20.0),
+                  SizedBox(
+                    width: 100.0,
+                    child: LinearProgressIndicator(),
+                  ),
+                ],
               ),
             ),
-            Expanded(
+            Container(
               child: Padding(
                 padding: EdgeInsets.only(right: 10.0, bottom: 10.0),
                 child: Align(

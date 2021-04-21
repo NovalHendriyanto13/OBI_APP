@@ -1,41 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
-import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/repository/auction_repo.dart';
-import 'package:obi_mobile/pages/home.dart';
+import 'package:obi_mobile/models/m_auction.dart';
 
-class AuctionDetail extends StatefulWidget {
-  static String tag = 'auction-detail-page';
-  static String name = 'Auction Detail';
+class AuctionUnit extends StatefulWidget {
+  static String tag = 'auction-unit-page';
+  static String name = 'Auction Unit';
 
-  @override 
-  _AuctionDetailState createState() => _AuctionDetailState();
+  @override
+  _AuctionUnitState createState() => _AuctionUnitState();
 }
 
-class _AuctionDetailState extends State<AuctionDetail> {
-
+class _AuctionUnitState extends State<AuctionUnit> {
   DrawerMenu _drawerMenu = new DrawerMenu();
   BottomMenu _bottomMenu = new BottomMenu();
-  AuctionRepo _auctionRepo = AuctionRepo();
-  
+  AuctionRepo _auctionRepo = new AuctionRepo();
+
   @override
   void initState() {
-    super.initState(); 
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-
-    Drawer _menu = _drawerMenu.initialize(context, AuctionDetail.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Home.tag);
+    Drawer _menu = _drawerMenu.initialize(context, AuctionUnit.tag);
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, AuctionUnit.tag);
     
     final Map param = ModalRoute.of(context).settings.arguments;
-    String id = param["IdAuctions"];
 
     final _dataList = Expanded(
       child: FutureBuilder<M_Auction>(
-        future: _auctionRepo.detail(id),
+        future: _auctionRepo.unit(param),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List _data = snapshot.data.getListData();
@@ -112,17 +108,10 @@ class _AuctionDetailState extends State<AuctionDetail> {
         }
       )
     );
-
+    
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(param["Kota"], style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            Text(param["TglAuctions"], style: TextStyle(fontSize: 10.0))
-          ],
-        ),
+        title: Text(AuctionUnit.name),
         backgroundColor: Colors.red,
       ),
       drawer: _menu,

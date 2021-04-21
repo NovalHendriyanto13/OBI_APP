@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/repository/auction_repo.dart';
+import 'package:obi_mobile/libraries/bottom_menu.dart';
 
 class BuyNpl extends StatefulWidget {
   static String tag = 'buy-npl-page';
@@ -15,6 +16,7 @@ class _BuyNplState extends State<BuyNpl> {
   
   // repo and model
   AuctionRepo _auctionRepo = new AuctionRepo();
+  BottomMenu _bottomMenu = new BottomMenu();
 
   // controller
   TextEditingController _auctions = TextEditingController();
@@ -44,6 +46,8 @@ class _BuyNplState extends State<BuyNpl> {
 
   @override
   Widget build(BuildContext context) {
+
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, BuyNpl.tag);
 
     final auctions = TextFormField(
       controller: _auctions,
@@ -178,6 +182,7 @@ class _BuyNplState extends State<BuyNpl> {
         title: Text(BuyNpl.name),
         backgroundColor: Colors.red,
       ),
+      bottomNavigationBar: _bottomNav,
       body: Center(
         child: ListView(
           shrinkWrap: true,

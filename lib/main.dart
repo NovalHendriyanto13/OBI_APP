@@ -10,6 +10,8 @@ import 'package:obi_mobile/pages/profile.dart';
 import 'package:obi_mobile/pages/change.dart';
 import 'package:obi_mobile/pages/bid.dart';
 import 'package:obi_mobile/pages/area.dart';
+import 'package:obi_mobile/pages/auction_unit.dart';
+import 'package:obi_mobile/pages/my_unit.dart';
 
 void main() {
   runApp(MyApp());
@@ -27,13 +29,15 @@ class MyApp extends StatelessWidget {
     Profile.tag : (context) => Profile(),
     Change.tag : (context) => Change(),
     Bid.tag : (context) => Bid(),
-    Area.tag : (context) => Area()
+    Area.tag : (context) => Area(),
+    AuctionUnit.tag : (context) => AuctionUnit(),
+    MyUnit.tag : (context) => MyUnit(),
   };
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'OTOBID MOBILE',
+      title: 'OTOBID',
       theme: ThemeData(
         // This is the theme of your application.
         //

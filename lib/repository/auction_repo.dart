@@ -54,5 +54,31 @@ class AuctionRepo {
       throw Exception('Connect to Api Failed');
     }
   }
+
+  Future<M_Auction> unit(param) async{
+    
+    Session _session = new Session();
+    String token = await _session.getString('token');
+
+    final data = jsonEncode(param);
+
+    Map<String, String> header = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    };
+
+    final response = await http.post(
+      Uri.http(apiUrl, 'auction_detail'),
+      headers: header,
+      body: data
+    );
+
+    if (response.statusCode==200) {
+      return M_Auction.fromJson(jsonDecode(response.body));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
  
 }

@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 
-class Bid extends StatefulWidget {
-  static String tag = 'bid-page';
-  static String name = 'My Bid';
-
+class MyUnit extends StatefulWidget {
+  static String tag = 'my-unit-page';
+  static String name = 'My Unit';
   @override
-  _BidState createState() => _BidState();
+  _MyUnitState createState() => _MyUnitState();
 }
 
-class _BidState extends State<Bid> {
-
+class _MyUnitState extends State<MyUnit> {
   DrawerMenu _drawerMenu = new DrawerMenu();
   BottomMenu _bottomMenu = new BottomMenu();
 
@@ -22,17 +20,18 @@ class _BidState extends State<Bid> {
 
   @override
   Widget build(BuildContext context) {
-    Drawer _menu = _drawerMenu.initialize(context, Bid.tag);
-    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Bid.tag);
-
+    Drawer _menu = _drawerMenu.initialize(context, MyUnit.tag);
+    BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, null);
     return Scaffold(
       appBar: AppBar(
-        title: Text(Bid.name),
         backgroundColor: Colors.red,
+        title: Text(MyUnit.name),
       ),
       drawer: _menu,
       bottomNavigationBar: _bottomNav,
-      // body: L,
+      body: Container(
+
+      )
     );
   }
 }
