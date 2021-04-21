@@ -3,6 +3,7 @@ import 'package:obi_mobile/libraries/session.dart';
 import 'package:obi_mobile/pages/change.dart';
 import 'package:obi_mobile/pages/home.dart';
 import 'package:obi_mobile/pages/login.dart';
+import 'package:obi_mobile/pages/my_unit.dart';
 import 'package:obi_mobile/pages/npl.dart';
 import 'package:obi_mobile/pages/profile.dart';
 import 'package:obi_mobile/pages/bid.dart';
@@ -98,6 +99,19 @@ class DrawerMenu {
               else {
                 Navigator.pop(context);
                 Navigator.of(context).pushNamed(Bid.tag);
+              }
+            }
+          ),
+          ListTile(
+            leading: Icon(Icons.drive_eta),
+            title: Text('My Unit'),
+            onTap: () {
+              if (pageTag == MyUnit.tag) {
+                Navigator.pop(context);
+              }
+              else {
+                Navigator.pop(context);
+                Navigator.of(context).pushNamed(MyUnit.tag);
               }
             }
           ),

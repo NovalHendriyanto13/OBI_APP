@@ -48,6 +48,7 @@ class _HomeState extends State<Home> {
         });
       }
     });
+    _dataYear.add(0);
   }
   
   @override
@@ -170,32 +171,32 @@ class _HomeState extends State<Home> {
       value: _selectedBrand,
     );
 
-    final series = DropdownButtonFormField(
-      items: _dataSeri.map((e) {
-        String v = e["Tipe"].toString();
-        if (e["Tipe"] == "Semua Tipe") {
-          v = "";
-        }
-        return DropdownMenuItem(
-          child: Text(e["Merk"]),
-          value: v, 
-        );
-      }).toList(),
-      hint: Text('Pilih Merk'),
-      // decoration: InputDecoration(
-      //   border: OutlineInputBorder(
-      //     borderRadius: const BorderRadius.all(
-      //       const Radius.circular(5.0),
-      //     ),
-      //   ),
-      // ),
-      onChanged: (selected) {
-        setState(() {
-          _selectedSeri = selected;
-        });
-      },
-      value: _selectedSeri,
-    );
+    // final series = DropdownButtonFormField(
+    //   items: _dataSeri.map((e) {
+    //     String v = e["Tipe"].toString();
+    //     if (e["Tipe"] == "Semua Tipe") {
+    //       v = "";
+    //     }
+    //     return DropdownMenuItem(
+    //       child: Text(e["Merk"]),
+    //       value: v, 
+    //     );
+    //   }).toList(),
+    //   hint: Text('Pilih Merk'),
+    //   // decoration: InputDecoration(
+    //   //   border: OutlineInputBorder(
+    //   //     borderRadius: const BorderRadius.all(
+    //   //       const Radius.circular(5.0),
+    //   //     ),
+    //   //   ),
+    //   // ),
+    //   onChanged: (selected) {
+    //     setState(() {
+    //       _selectedSeri = selected;
+    //     });
+    //   },
+    //   value: _selectedSeri,
+    // );
 
     final year = DropdownButtonFormField(
       items: _dataYear.map((e) {
@@ -261,7 +262,7 @@ class _HomeState extends State<Home> {
             SizedBox(height: 10.0),
             Row(
               children: [
-                Expanded(child: series),
+                // Expanded(child: series),
                 SizedBox(width: 10.0),
                 // Expanded(child: merk)
               ],

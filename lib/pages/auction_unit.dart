@@ -37,9 +37,9 @@ class _AuctionUnitState extends State<AuctionUnit> {
             List _data = snapshot.data.getListData();
 
             return ListView.builder(
-              itemCount: _data[0]['detail'].length,
+              itemCount: _data.length,
               itemBuilder: (BuildContext context, int index) {
-                List _list = _data[0]['detail'];
+                List _list = _data;
                 return Card(
                   child: Column(
                     children: [

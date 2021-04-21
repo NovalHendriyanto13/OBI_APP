@@ -61,17 +61,26 @@ class AuctionRepo {
     String token = await _session.getString('token');
 
     final data = jsonEncode(param);
+    var response;
 
     Map<String, String> header = {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + token
     };
 
-    final response = await http.post(
-      Uri.http(apiUrl, 'auction_detail'),
-      headers: header,
-      body: data
-    );
+    if (param != null) {
+      response = await http.post(
+        Uri.http(apiUrl, 'auction_detail'),
+        headers: header,
+        body: data
+      );
+    }
+    else {
+      response = await http.post(
+        Uri.http(apiUrl, 'auction_detail'),
+        headers: header,
+      );
+    }
 
     if (response.statusCode==200) {
       return M_Auction.fromJson(jsonDecode(response.body));

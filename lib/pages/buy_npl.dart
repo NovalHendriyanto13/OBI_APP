@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/repository/auction_repo.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
+import 'package:obi_mobile/libraries/drawer_menu.dart';
 
 class BuyNpl extends StatefulWidget {
   static String tag = 'buy-npl-page';
@@ -17,6 +18,7 @@ class _BuyNplState extends State<BuyNpl> {
   // repo and model
   AuctionRepo _auctionRepo = new AuctionRepo();
   BottomMenu _bottomMenu = new BottomMenu();
+  DrawerMenu _drawerMenu = new DrawerMenu();
 
   // controller
   TextEditingController _auctions = TextEditingController();
@@ -27,7 +29,7 @@ class _BuyNplState extends State<BuyNpl> {
   TextEditingController _an = TextEditingController();
   
   // variable
-  Future<M_Auction> _dataAuction;
+  List _dataAuction;
   List<String> _dataType = <String>['Mobil','Motor','Alat Berat','Barang Inventaris'];
   String _selectedType = 'Mobil'; 
   String _selectedAuction = "";
@@ -37,17 +39,23 @@ class _BuyNplState extends State<BuyNpl> {
   void initState() {
     super.initState();
 
-    _dataAuction = _auctionRepo.list();
+    // _loadData();
   }
 
   _loadData() async {
-
+    _auctionRepo.list().then((value) {
+      // print('asdsadasda');
+      // setState(() {
+      //   _dataAuction = value.getListData();
+      // });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
 
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, BuyNpl.tag);
+    Drawer _menu = _drawerMenu.initialize(context, BuyNpl.tag);
 
     final auctions = TextFormField(
       controller: _auctions,
@@ -58,6 +66,22 @@ class _BuyNplState extends State<BuyNpl> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
         ),
     );
+    // 
+    // final auctions = DropdownButtonFormField(
+    //   items: _dataAuction.map((e) {
+    //     return DropdownMenuItem(
+    //       child: Text(e["Kota"] + ', ' + Text(e['TglAuctions'])),
+    //       value: e['IdAuctions'], 
+    //     );
+    //   }).toList(),
+    //   hint: Text('Pilih Tanggal'),
+    //   // onChanged: (selected) {
+    //   //   setState(() {
+    //   //     _selectedBrand = selected;
+    //   //   });
+    //   // },
+    //   // value: _selectedBrand,
+    // );
 
     final noRek = TextFormField(
       controller: _noRek,
@@ -182,6 +206,7 @@ class _BuyNplState extends State<BuyNpl> {
         title: Text(BuyNpl.name),
         backgroundColor: Colors.red,
       ),
+      drawer: _menu,
       bottomNavigationBar: _bottomNav,
       body: Center(
         child: ListView(
