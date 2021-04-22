@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
+import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/repository/unit_repo.dart';
 
 class MyUnit extends StatefulWidget {
@@ -16,12 +17,14 @@ class _MyUnitState extends State<MyUnit> {
   UnitRepo _unitRepo = new UnitRepo();
 
   List _dataList = [];
+  Future<M_Unit> _dataUnit;
 
   @override
   void initState() {
     super.initState();
 
-    _loadData();
+    // _loadData();
+    _dataUnit = _unitRepo.list();
   }
   
   _loadData() async{
@@ -40,49 +43,52 @@ class _MyUnitState extends State<MyUnit> {
     Drawer _menu = _drawerMenu.initialize(context, MyUnit.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, null);
 
-    final dataRow = _dataList.map((e) {
-       print(e);
-       return DataRow(
-        cells: [
-          DataCell(
-            Text(e['NoPolisi'])
-          ),
-          DataCell(
-            Text(e['Merk'] + ' ' + e['Tipe'] + ' ' + e['Transmisi'] + ' ' + e['Warna'] + ' ' + e['Tahun'])
-          ),
-          DataCell(
-            Text(e['TglMasukUnit'])
-          ),
-          DataCell(
-            Text(e['TglKeluarUnit'])
-          ),
-        ]
-      );
-    }).toList();
-
-
-    SingleChildScrollView _dataBody() {
-      return SingleChildScrollView(
-        scrollDirection: Axis.vertical,
+    _dataBody() {
+      return Expanded(
+        // scrollDirection: Axis.vertical,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columns: const <DataColumn>[
-              DataColumn(
-                label: Text('No Polisi')
-              ),
-              DataColumn(
-                label: Text('Unit') 
-              ),
-              DataColumn(
-                label: Text('Tgl Masuk')
-              ),
-              DataColumn(
-                label: Text('Tgl Keluar')
-              )
-            ],
-            rows: dataRow,
-          ),
+          child: FutureBuilder<M_Unit>(
+            future: _dataUnit,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                List _data = snapshot.data.getListData();
+                return DataTable(
+                  columns: const <DataColumn>[
+                    DataColumn(
+                      label: Text('No Polisi')
+                    ),
+                    DataColumn(
+                      label: Text('Unit') 
+                    ),
+                    DataColumn(
+                      label: Text('Tgl Masuk')
+                    ),
+                    DataColumn(
+                      label: Text('Tgl Keluar')
+                    )
+                  ],
+                  rows: _data.map((e) {
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          Text(e['NoPolisi'])
+                        ),
+                        DataCell(
+                          Text(e['Merk'] + ' ' + e['Tipe'] + ' ' + e['Transmisi'] + ' ' + e['Warna'] + ' ' + e['Tahun'])
+                        ),
+                        DataCell(
+                          Text(e['TglMasukUnit'])
+                        ),
+                        DataCell(
+                          Text(e['TglKeluarUnit'])
+                        ),
+                      ]);
+                  }).toList(),
+                );
+              }
+            }
+          )
         )
       );
     }
@@ -95,7 +101,7 @@ class _MyUnitState extends State<MyUnit> {
       ),
       drawer: _menu,
       bottomNavigationBar: _bottomNav,
-      body: Expanded(
+      body: Container(
         child: _dataBody()
       ),
     );

@@ -7,11 +7,15 @@ class RefreshToken {
   Session _session = new Session();
   UserRepo _userRepo = new UserRepo();
   
-  run() async{
-    int _delay = await this._session.getInt("expireIn");
+  DateTime now;
 
-    var _duration = Duration(seconds: _delay);
-    return Timer(_duration, refreshToken);
+  run() async{
+    final _now = DateTime.now();
+    final _diff = _now.difference(this.now).inSeconds;
+    int _delay = await this._session.getInt("expireIn");
+    if (_diff > _delay) {
+      await refreshToken();
+    }
   }
 
   refreshToken() async{
@@ -31,11 +35,21 @@ class RefreshToken {
           _session.setInt('expireIn', expireIn);
           _session.setBool('isLogin', isLogin);
 
-          this.run();
+          this.setTime();
 
         }
       });
+  }
 
+  setTime() async{
+    DateTime _now = DateTime.now();
+    int _delay = await this._session.getInt("expireIn");
+    var _duration = Duration(seconds: _delay);
+    DateTime _validTime = _now.add(_duration);
+
+    this.now = _validTime;
+
+    return this;
   }
 
 }

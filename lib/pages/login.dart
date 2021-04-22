@@ -115,8 +115,9 @@ class _LoginState extends State<Login> {
                 _session.setString('name', name);
                 _session.setInt('expireIn', expireIn);
                 _session.setBool('isLogin', isLogin);
+                // _session.setString()
 
-                _refreshToken.run();
+                _refreshToken.setTime();
                 
                 Toast.show('Selamat Datang,' + name, context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>Home()));
@@ -124,7 +125,6 @@ class _LoginState extends State<Login> {
               else {
                 Map errMessage = value.getMessage();
                 String msg = errMessage['message'];
-                print(msg);
                 Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red.shade50);
               }
 
