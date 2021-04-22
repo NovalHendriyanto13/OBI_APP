@@ -32,7 +32,10 @@ class _BidState extends State<Bid> {
       ),
       drawer: _menu,
       bottomNavigationBar: _bottomNav,
-      // body: L,
+      body: Container(
+        padding: EdgeInsets.all(12.0),
+        color: Colors.blueGrey.shade50,
+      ),
     );
   }
 }

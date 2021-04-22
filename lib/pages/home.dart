@@ -47,7 +47,6 @@ class _HomeState extends State<Home> {
       if (status == true) {
         setState(() {
           _dataBrand.addAll(value.getListData());
-          // _dataBrand = value.getListData();
         });
       }
     });
@@ -95,6 +94,7 @@ class _HomeState extends State<Home> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               List<dynamic> _data = snapshot.data.getListData();
+              print(snapshot.data.getMessage());
               if (_data.length.isOdd) {
                 _data.add({
                   "Kota":"",
@@ -136,7 +136,7 @@ class _HomeState extends State<Home> {
               );
             }
             else if (snapshot.hasError) {
-              return Text('Error...');
+              return Text(snapshot.error.toString());
             }
             return Center(
               child: CircularProgressIndicator(),

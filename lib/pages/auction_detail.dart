@@ -70,16 +70,18 @@ class _AuctionDetailState extends State<AuctionDetail> {
                           subtitle: Column(
                             // mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(_list[index]['NoPolisi']),
-                                  Text('|'),
-                                  Text(_list[index]['Tahun']),
-                                  Text('|'),
-                                  Text(_list[index]['Warna'])
-                                ]
+                              Expanded(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(_list[index]['NoPolisi']),
+                                    Text('|'),
+                                    Text(_list[index]['Tahun']),
+                                    Text('|'),
+                                    Text(_list[index]['Warna'])
+                                  ]
+                                )
                               ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,7 +146,8 @@ class _AuctionDetailState extends State<AuctionDetail> {
       drawer: _menu,
       bottomNavigationBar: _bottomNav,
       body: Container(
-        color: Colors.grey.shade50,
+        padding: EdgeInsets.all(12.0),
+        color: Colors.blueGrey.shade50,
         child: _dataList,
       ),
     );

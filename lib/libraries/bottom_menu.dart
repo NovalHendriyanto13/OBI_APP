@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:obi_mobile/pages/area.dart';
 import 'package:obi_mobile/pages/home.dart';
 import 'package:obi_mobile/pages/buy_npl.dart';
-import 'package:obi_mobile/pages/bid.dart';
+import 'package:obi_mobile/pages/room.dart';
 import 'package:obi_mobile/pages/auction_unit.dart';
 
 class BottomMenu {
@@ -11,7 +11,7 @@ class BottomMenu {
     List _pageList = [
       Home.tag,
       BuyNpl.tag,
-      Bid.tag,
+      Room.tag,
       AuctionUnit.tag,
       Area.tag
     ];

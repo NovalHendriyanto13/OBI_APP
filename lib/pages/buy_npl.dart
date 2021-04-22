@@ -208,30 +208,34 @@ class _BuyNplState extends State<BuyNpl> {
       ),
       drawer: _menu,
       bottomNavigationBar: _bottomNav,
-      body: Center(
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.only(left: 24.0, right: 24.0),
-          children: <Widget>[
-            SizedBox(height: 10.0),
-            auctions,
-            SizedBox(height: 8.0),
-            noRek,
-            SizedBox(height: 8.0),
-            type,
-            SizedBox(height: 8.0),
-            totalNpl,
-            SizedBox(height: 8.0),
-            totalPayment,
-            SizedBox(height: 8.0),
-            an,
-            SizedBox(height: 8.0),
-            toc,
-            SizedBox(height: 8.0),
-            button
-          ],
+      body: Container(
+        padding: EdgeInsets.all(12.0),
+        color: Colors.blueGrey.shade50,
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.only(left: 24.0, right: 24.0),
+            children: <Widget>[
+              SizedBox(height: 10.0),
+              auctions,
+              SizedBox(height: 8.0),
+              noRek,
+              SizedBox(height: 8.0),
+              type,
+              SizedBox(height: 8.0),
+              totalNpl,
+              SizedBox(height: 8.0),
+              totalPayment,
+              SizedBox(height: 8.0),
+              an,
+              SizedBox(height: 8.0),
+              toc,
+              SizedBox(height: 8.0),
+              button
+            ],
+          ),
         ),
-      ),
+      )
     );
   }
 }
