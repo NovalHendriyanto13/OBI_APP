@@ -38,7 +38,7 @@ class _RoomState extends State<Room> {
     Drawer _menu = _drawerMenu.initialize(context, Room.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Room.tag);
 
-    final _listNow = Expanded(
+    final _listNow = SizedBox(
       child: FutureBuilder<M_Auction>(
         future: _dataList,
         builder: (context, snapshot) {
@@ -71,7 +71,7 @@ class _RoomState extends State<Room> {
       )
     );
 
-    final _listNext = Expanded(
+    final _listNext = SizedBox(
       child: FutureBuilder<M_Auction>(
         future: _dataList,
         builder: (context, snapshot) {
@@ -125,6 +125,16 @@ class _RoomState extends State<Room> {
             Text('Akan Datang', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic)),
             _listNext,
           ],
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end:Alignment(0.8, 0.0),
+            colors: [
+              Colors.red.shade400,
+              Colors.grey.shade200
+            ]
+          )
         ),
       ),
     );

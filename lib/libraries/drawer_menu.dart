@@ -22,14 +22,22 @@ class DrawerMenu {
     _session.setBool('isLogin', false); 
   }
 
+  getName() async {
+    Session _session = new Session();
+    String _name = await _session.getString('name');
+
+    return _name;
+  } 
+
   Drawer initialize(BuildContext context, String pageTag) {
+    
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           UserAccountsDrawerHeader(
             accountEmail: Text(''),
-            accountName: Text('Username'),
+            accountName: Text("Username"),
             currentAccountPicture: CircleAvatar(
               backgroundImage: AssetImage('assets/images/profile_default.png'),
             ),

@@ -196,40 +196,52 @@ class _RegState extends State<Reg> {
         title: Text(Reg.name),
         backgroundColor: Colors.red,
       ),
-      body: Center(
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.only(left: 24.0, right: 24.0),
-          children: <Widget>[
-            SizedBox(height: 8.0),
-            name,
-            SizedBox(height: 8.0),
-            email,
-            SizedBox(height: 8.0),
-            mobile,
-            SizedBox(height: 8.0),
-            phone,
-            SizedBox(height: 8.0),
-            address,
-            SizedBox(height: 8.0),
-            ktp,
-            SizedBox(height: 8.0),
-            npwp,
-            SizedBox(height: 8.0),
-            bank,
-            SizedBox(height: 8.0),
-            branch,
-            SizedBox(height: 8.0),
-            noRek,
-            SizedBox(height: 8.0),
-            anRek,
-            SizedBox(height: 8.0),
-            toc,
-            SizedBox(height: 8.0),
-            button
-          ],
-        )
-      ),
+      body: Container(
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.only(left: 24.0, right: 24.0),
+            children: <Widget>[
+              SizedBox(height: 8.0),
+              name,
+              SizedBox(height: 8.0),
+              email,
+              SizedBox(height: 8.0),
+              mobile,
+              SizedBox(height: 8.0),
+              phone,
+              SizedBox(height: 8.0),
+              address,
+              SizedBox(height: 8.0),
+              ktp,
+              SizedBox(height: 8.0),
+              npwp,
+              SizedBox(height: 8.0),
+              bank,
+              SizedBox(height: 8.0),
+              branch,
+              SizedBox(height: 8.0),
+              noRek,
+              SizedBox(height: 8.0),
+              anRek,
+              SizedBox(height: 8.0),
+              toc,
+              SizedBox(height: 8.0),
+              button
+            ],
+          )
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end:Alignment(0.8, 0.0),
+            colors: [
+              Colors.red.shade400,
+              Colors.grey.shade200
+            ]
+          )
+        ),
+      )
     );
   }
 }

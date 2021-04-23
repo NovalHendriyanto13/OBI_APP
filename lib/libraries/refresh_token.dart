@@ -17,24 +17,26 @@ class RefreshToken {
     final _d1 = DateTime.parse(_nowDt);
     final _d2 = DateTime.parse(_validTokenTime);
 
-    final _diff = _d1.difference(_d2).inSeconds;
-    if (_diff > _expireIn) {
+    final _diff = _d2.difference(_d1).inSeconds;
+    
+    if (_diff < _expireIn) {
       await refreshToken();
     }
   }
 
   refreshToken() async{
       String _username = await this._session.getString("username");
-      String _password = await this._session.getString("password");
+      String _password = await this._session.getString("pass");
       String token;
       int expireIn;
+
       this._userRepo.login(_username, _password).then((value) {
         bool isLogin = value.getStatus();
         if (isLogin == true) {
           Map data = value.getData();
           token = data['token'];
           expireIn = data['expire_in'];
-        
+      
           _session.setString('token', token);
           _session.setInt('expireIn', expireIn);
           _session.setBool('isLogin', isLogin);

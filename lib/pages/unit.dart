@@ -17,6 +17,7 @@ class _UnitState extends State<Unit> {
     super.initState();
 
     _refreshToken.run();
+
   }
 
   @override
@@ -28,10 +29,19 @@ class _UnitState extends State<Unit> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
-        title: Text(Unit.name),
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text("LOT : "  + param["NoLot"], style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Text(param["Merk"] + " " + param['Tipe'])
+          ],
+        ),
       ),
       drawer: _menu,
       body: Container(
+        padding: EdgeInsets.only(left: 12.0, right: 12.0),
+        color: Colors.blueGrey.shade50,
         child: Text(param.toString())
       )
     );

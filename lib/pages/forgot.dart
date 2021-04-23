@@ -74,21 +74,33 @@ class _ForgotState extends State<Forgot> {
         title: Text(Forgot.name),
         backgroundColor: Colors.red,
       ),
-      body: Center(
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.only(left: 24.0, right: 24.0),
-          children: <Widget>[
-            logo,
-            SizedBox(height: 48.0),
-            Text('Masukan Email Anda'),
-            SizedBox(height: 10.0),
-            email,
-            SizedBox(height: 24.0),
-            button
-          ]
+      body: Container(
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.only(left: 24.0, right: 24.0),
+            children: <Widget>[
+              logo,
+              SizedBox(height: 48.0),
+              Text('Masukan Email Anda'),
+              SizedBox(height: 10.0),
+              email,
+              SizedBox(height: 24.0),
+              button
+            ]
+          ),
         ),
-      ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end:Alignment(0.8, 0.0),
+            colors: [
+              Colors.red.shade400,
+              Colors.grey.shade200
+            ]
+          )
+        ),
+      )
     );
   }
 }

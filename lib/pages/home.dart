@@ -94,7 +94,6 @@ class _HomeState extends State<Home> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               List<dynamic> _data = snapshot.data.getListData();
-              print(snapshot.data.getMessage());
               if (_data.length.isOdd) {
                 _data.add({
                   "Kota":"",
@@ -109,26 +108,29 @@ class _HomeState extends State<Home> {
                   mainAxisSpacing: 4.0,
                 ), 
                 itemBuilder: (BuildContext context, int index) {
-                  return Container(
-                    padding: EdgeInsets.all(10.0),
-                    color: Colors.white,
-                    child: GestureDetector(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_data[index]['Kota'], 
-                            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.red.shade400)),
-                          // SizedBox(height: 10.0),
-                          Text(_data[index]['TglAuctions'])
-                        ],
-                      ),
-                      onTap: () {
-                        if (_data[index]['Kota'] != '') {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: _data[index])));
-                        }
-                      },
-                    ), 
+                  return Card(
+                    child: Container(
+                      padding: EdgeInsets.all(10.0),
+                      // color: Colors.white,
+                      child: GestureDetector(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_data[index]['Kota'], 
+                              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.red.shade400)),
+                            // SizedBox(height: 10.0),
+                            Text(_data[index]['TglAuctions'])
+                          ],
+                        ),
+                        onTap: () {
+                          if (_data[index]['Kota'] != '') {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: _data[index])));
+                          }
+                        },
+                      ), 
+                    )
+
                   );
                 },
                 itemCount: _data.length,

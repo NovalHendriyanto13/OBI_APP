@@ -47,8 +47,6 @@ class _ProfileState extends State<Profile> {
 
         data = data.toString();
 
-        print(data["Nama"]);
-
         _name = TextEditingController(text: data['Nama']);
         _email = TextEditingController(text: data['Email']);
         _mobile = TextEditingController(text: data['NoTelp']);
