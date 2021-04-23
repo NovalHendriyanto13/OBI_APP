@@ -54,7 +54,7 @@ class _AuctionDetailState extends State<AuctionDetail> {
                     child: Column(
                       children: [
                         Container(
-                          height: 120,
+                          height: 150,
                           padding: EdgeInsets.all(0),
                           child: Row(
                             children: [

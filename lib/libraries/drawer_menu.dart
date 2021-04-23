@@ -30,6 +30,8 @@ class DrawerMenu {
   } 
 
   Drawer initialize(BuildContext context, String pageTag) {
+
+    String name = getName().toString();
     
     return Drawer(
       child: ListView(
@@ -37,12 +39,20 @@ class DrawerMenu {
         children: <Widget>[
           UserAccountsDrawerHeader(
             accountEmail: Text(''),
-            accountName: Text("Username"),
-            currentAccountPicture: CircleAvatar(
-              backgroundImage: AssetImage('assets/images/profile_default.png'),
-            ),
+            accountName: Text(name),
+            currentAccountPicture: Center(
+              child: CircleAvatar(
+                backgroundImage: AssetImage('assets/images/profile_default.png'),
+            )),
             decoration: BoxDecoration(
-              color: Colors.red
+              gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end:Alignment(0.8, 0.0),
+              colors: [
+                Colors.red.shade900,
+                Colors.red.shade400
+              ]
+            )
             )
           ),
           ListTile(

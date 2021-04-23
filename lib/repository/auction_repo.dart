@@ -4,12 +4,16 @@ import 'package:http/http.dart' as http;
 import 'package:obi_mobile/configs/config.dart' as config;
 import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/libraries/session.dart';
+import 'package:obi_mobile/libraries/refresh_token.dart';
 
 class AuctionRepo {
   
   final String apiUrl = config.API_URL;
+  RefreshToken _refreshToken = RefreshToken();
 
   Future<M_Auction> list() async{
+
+    await _refreshToken.run();
 
     Session _session = new Session();
     String token = await _session.getString('token');
@@ -33,6 +37,8 @@ class AuctionRepo {
   }
 
   Future<M_Auction> detail(id) async{
+
+    await _refreshToken.run();
     
     Session _session = new Session();
     String token = await _session.getString('token');
@@ -56,6 +62,8 @@ class AuctionRepo {
   }
 
   Future<M_Auction> unit(param) async{
+
+    await _refreshToken.run();
     
     Session _session = new Session();
     String token = await _session.getString('token');
@@ -91,6 +99,8 @@ class AuctionRepo {
   }
 
   Future<M_Auction> nowNext() async{
+
+    await _refreshToken.run();
     
     Session _session = new Session();
     String token = await _session.getString('token');

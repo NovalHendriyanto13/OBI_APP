@@ -39,16 +39,16 @@ class _AuctionUnitState extends State<AuctionUnit> {
 
             return ListView.builder(
               shrinkWrap: true,
-              itemCount: _data[0]['detail'].length,
+              itemCount: _data.length,
               itemBuilder: (BuildContext context, int index) {
-                List _list = _data[0]['detail'];
+                List _list = _data;
                 return GestureDetector( 
                   child : Card(
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
                         Container(
-                          height: 120,
+                          height: 150,
                           padding: EdgeInsets.all(0),
                           child: Row(
                             children: [
@@ -75,6 +75,7 @@ class _AuctionUnitState extends State<AuctionUnit> {
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
+                                          Text('Auction #' + _list[index]['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                                           Text('No Lot : ' + _list[index]['NoLot'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                                           Text((_list[index]['Merk'] + ' ' + _list[index]['Tipe'] + ' ' + _list[index]['Transmisi']).toString().toUpperCase(), style: TextStyle(fontWeight: FontWeight.bold)),
                                         ]

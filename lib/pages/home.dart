@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
@@ -7,6 +8,7 @@ import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/pages/buy_npl.dart';
 import 'package:obi_mobile/pages/auction_detail.dart';
 import 'package:obi_mobile/pages/auction_unit.dart';
+import 'package:obi_mobile/pages/room.dart';
 import 'package:obi_mobile/repository/auction_repo.dart';
 import 'package:obi_mobile/repository/brand_repo.dart';
 
@@ -79,6 +81,10 @@ class _HomeState extends State<Home> {
             text: TextSpan(
               text: 'Lihat Semua',
               style: TextStyle(color: Colors.blue),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  Navigator.pushNamed(context, Room.tag);
+                }
             ),
           ),
         )
@@ -323,6 +329,7 @@ class _HomeState extends State<Home> {
         title: Text(Home.name),
         backgroundColor: Colors.red,
         actions: _searchBar.build(),
+        elevation: 0.0,
       ),
       drawer: _menu,
       bottomNavigationBar: _bottomNav,

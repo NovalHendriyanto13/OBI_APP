@@ -24,7 +24,7 @@ class BottomMenu {
         BottomNavigationBarItem(
           icon: Icon(Icons.home_filled),
           label: 'Home',
-          backgroundColor: Colors.red
+          backgroundColor: Colors.red,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.copy_rounded),
@@ -47,8 +47,7 @@ class BottomMenu {
           backgroundColor: Colors.red,     
         )
       ],
-      selectedItemColor: Colors.white,
-
+      selectedItemColor: Colors.grey,
       onTap: (index) {
         Navigator.of(context).pushReplacementNamed(_pageList[index]);
       },
