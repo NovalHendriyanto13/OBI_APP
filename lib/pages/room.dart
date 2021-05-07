@@ -44,29 +44,34 @@ class _RoomState extends State<Room> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List _now = snapshot.data.getListData();
-            return ListView.builder(
-              itemCount: _now[0]['now'].length,
-              itemBuilder: (BuildContext context, int index) {
-                List data = _now[0]['now'];
-                return GestureDetector(
-                  child: Card(
-                    child: ListTile(
-                      title: Text((data[index]['Kota']).toString().toUpperCase()),
-                      subtitle: Text(data[index]['TglAuctions']),
-                      trailing: Icon(Icons.more_vert),
+            if (_now[0]['now'].length <= 0) {
+              return Center(child: Text('No Data Found'));
+            }
+            else {
+              return ListView.builder(
+                itemCount: _now[0]['now'].length,
+                itemBuilder: (BuildContext context, int index) {
+                  List data = _now[0]['now'];
+                  return GestureDetector(
+                    child: Card(
+                      child: ListTile(
+                        title: Text((data[index]['Kota']).toString().toUpperCase()),
+                        subtitle: Text(data[index]['TglAuctions']),
+                        trailing: Icon(Icons.more_vert),
+                      ),
                     ),
-                  ),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data[index])));
-                  },
-                );
-              }
-            );
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data[index])));
+                    },
+                  );
+                }
+              );
+            }
           }
           else if (snapshot.hasError) {
             return Text(snapshot.error.toString());
           }
-          return Center(child: Text('No Data Displayed'));
+          return Center(child: Text('No Data Found'));
         }
       )
     );
@@ -77,24 +82,29 @@ class _RoomState extends State<Room> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List _next = snapshot.data.getListData();
-            return ListView.builder(
-              itemCount: _next[0]['next'].length,
-              itemBuilder: (BuildContext context, int index) {
-                List data = _next[0]['next'];
-                return GestureDetector(
-                  child: Card(
-                    child: ListTile(
-                      title: Text(data[index]['Kota']),
-                      subtitle: Text(data[index]['TglAuctions']),
-                      trailing: Icon(Icons.more_vert),
+            if (_next[0]['next'].length <= 0) {
+              return Center(child: Text('No Data Found'));
+            }
+              else {
+              return ListView.builder(
+                itemCount: _next[0]['next'].length,
+                itemBuilder: (BuildContext context, int index) {
+                  List data = _next[0]['next'];
+                  return GestureDetector(
+                    child: Card(
+                      child: ListTile(
+                        title: Text(data[index]['Kota']),
+                        subtitle: Text(data[index]['TglAuctions']),
+                        trailing: Icon(Icons.more_vert),
+                      ),
                     ),
-                  ),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data[index])));
-                  },
-                );
-              }
-            );
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data[index])));
+                    },
+                  );
+                }
+              );
+            }
           }
           else if (snapshot.hasError) {
             return Text(snapshot.error.toString());

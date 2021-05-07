@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/models/m_unit.dart';
+import 'package:obi_mobile/repository/unit_repo.dart';
 import 'package:obi_mobile/pages/tabs/units/info.dart' as info;
 import 'package:obi_mobile/pages/tabs/units/document.dart' as doc;
 import 'package:obi_mobile/pages/tabs/units/bid.dart' as bid;
@@ -16,18 +17,19 @@ class Unit extends StatefulWidget {
 class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
   DrawerMenu _drawerMenu = new DrawerMenu();
   RefreshToken _refreshToken = new RefreshToken();
+  UnitRepo _unitRepo = new UnitRepo();
   TabController _tabController;
+  Future<M_Unit> _dataUnit;
 
   List<Widget> _tabList = <Widget>[
     Tab(child: Text('Info Unit')),
-    Tab(child: Text('Dokument')),
+    Tab(child: Text('Dokumen')),
     Tab(child: Text('Penawaran'))
   ];
   @override
   void initState() {
     super.initState();
-    // _refreshToken.run();
-
+    _refreshToken.run();
     _tabController = TabController(vsync: this, length: _tabList.length);
   }
 
@@ -36,6 +38,8 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
     Drawer _menu = _drawerMenu.initialize(context, Unit.tag);
 
     final Map param = ModalRoute.of(context).settings.arguments;
+    final String id = param['IdUnit'];
+    _dataUnit = _unitRepo.detail(id);
     
     return Scaffold(
       appBar: AppBar(
@@ -60,9 +64,9 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
         child: TabBarView(
           controller: _tabController,
           children: [
-            info.Info(data: param),
-            doc.Document(data: param),
-            bid.Bid(data: param),
+            info.Info(data: param, detail: _dataUnit),
+            doc.Document(data: param, detail: _dataUnit),
+            bid.Bid(data: param, detail: _dataUnit),
           ]
         )
       )

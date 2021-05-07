@@ -39,55 +39,63 @@ class _MyUnitState extends State<MyUnit> {
         if (snapshot.hasData) {
           List _data = snapshot.data.getListData();
 
-          return ListView.builder(
-            itemCount: _data.length,
-            itemBuilder: (BuildContext context, int index) {
-              _outUnit() {
-                if (_data[index]['TglKeluarUnit'] != null) {
-                  return DateFormat('d MMMM yyyy').format(DateTime.parse(_data[index]['TglKeluarUnit']));
-                }
-                return '-';
-              }
+          if (_data.length <= 0) {
+            return Center(
+              child: Text('No Data Found'),
+            );
+          }
+          else {
 
-              _inUnit() {
-                if (_data[index]['TglKeluarUnit'] != null) {
-                  DateFormat('d MMMM yyyy').format(DateTime.parse(_data[index]['TglMasukUnit']));
+            return ListView.builder(
+              itemCount: _data.length,
+              itemBuilder: (BuildContext context, int index) {
+                _outUnit() {
+                  if (_data[index]['TglKeluarUnit'] != null) {
+                    return DateFormat('d MMMM yyyy').format(DateTime.parse(_data[index]['TglKeluarUnit']));
+                  }
+                  return '-';
                 }
-                return '-';
-              }
-              return Card(
-                child: ListTile(
-                  title: Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text((_data[index]['Merk'] + ' ' + _data[index]['Tipe'] + ' ' + _data[index]['Transmisi']).toString().toUpperCase(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-                      ],),
-                  ),
-                  subtitle: Column(
-                    children: [
-                      SizedBox(height:8.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                _inUnit() {
+                  if (_data[index]['TglKeluarUnit'] != null) {
+                    DateFormat('d MMMM yyyy').format(DateTime.parse(_data[index]['TglMasukUnit']));
+                  }
+                  return '-';
+                }
+                return Card(
+                  child: ListTile(
+                    title: Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_data[index]['NoPolisi']),
-                          Text('|'),
-                          Text(_data[index]['Tahun']),
-                          Text('|'),
-                          Text(_data[index]['Warna'])
-                        ]
-                      ),
-                      SizedBox(height:8.0),
-                      Align(alignment: Alignment.centerLeft, child: Text('Tgl Masuk : ' + _inUnit() )),
-                      SizedBox(height:8.0),
-                      Align(alignment: Alignment.centerLeft, child: Text('Tgl Keluar : ' + _outUnit() )),
-                    ],
+                          Text((_data[index]['Merk'] + ' ' + _data[index]['Tipe'] + ' ' + _data[index]['Transmisi']).toString().toUpperCase(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                        ],),
+                    ),
+                    subtitle: Column(
+                      children: [
+                        SizedBox(height:8.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_data[index]['NoPolisi']),
+                            Text('|'),
+                            Text(_data[index]['Tahun']),
+                            Text('|'),
+                            Text(_data[index]['Warna'])
+                          ]
+                        ),
+                        SizedBox(height:8.0),
+                        Align(alignment: Alignment.centerLeft, child: Text('Tgl Masuk : ' + _inUnit() )),
+                        SizedBox(height:8.0),
+                        Align(alignment: Alignment.centerLeft, child: Text('Tgl Keluar : ' + _outUnit() )),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }
-          );
+                );
+              }
+            );
+          }
         }
         else if (snapshot.hasError) {
           return Text(snapshot.error.toString());

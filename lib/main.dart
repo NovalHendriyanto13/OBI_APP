@@ -14,6 +14,7 @@ import 'package:obi_mobile/pages/auction_unit.dart';
 import 'package:obi_mobile/pages/my_unit.dart';
 import 'package:obi_mobile/pages/unit.dart';
 import 'package:obi_mobile/pages/room.dart';
+import 'package:obi_mobile/pages/live_bid.dart';
 
 void main() {
   runApp(MyApp());
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
     MyUnit.tag : (context) => MyUnit(),
     Unit.tag : (context) => Unit(),
     Room.tag : (context) => Room(),
+    LiveBid.tag : (context) => LiveBid()
   };
   // This widget is the root of your application.
   @override

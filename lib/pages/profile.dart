@@ -45,18 +45,16 @@ class _ProfileState extends State<Profile> {
       if (status == true) {
         var data = value.getSingleData();
 
-        data = data.toString();
-
-        _name = TextEditingController(text: data['Nama']);
-        _email = TextEditingController(text: data['Email']);
-        _mobile = TextEditingController(text: data['NoTelp']);
-        _address = TextEditingController(text: data['Alamat']);
-        _ktp = TextEditingController(text: data['NoKTP']);
-        _npwp = TextEditingController(text: data['NoNPWP']);
-        _bank = TextEditingController(text: data['Bank']);
-        _noRek = TextEditingController(text: data['NoRek']);
-        _branch = TextEditingController(text: data['Cabang']);
-        _anRek = TextEditingController(text: data['AtasNama']);
+        _name = TextEditingController()..text= data['Nama'];
+        _email = TextEditingController()..text= data['Email'];
+        _mobile = TextEditingController()..text= data['NoTelp'];
+        _address = TextEditingController()..text= data['Alamat'];
+        _ktp = TextEditingController()..text= data['NoKTP'];
+        _npwp = TextEditingController()..text= data['NoNPWP'];
+        _bank = TextEditingController()..text= data['Bank'];
+        _noRek = TextEditingController()..text= data['NoRek'];
+        _branch = TextEditingController()..text= data['Cabang'];
+        _anRek = TextEditingController()..text= data['AtasNama'];
 
       }
       else {
@@ -73,6 +71,7 @@ class _ProfileState extends State<Profile> {
 
     final name = TextFormField(
       controller: _name,
+      enabled: false,
       keyboardType: TextInputType.text,
       decoration: InputDecoration(
         hintText: 'Nama Lengkap',
@@ -83,6 +82,7 @@ class _ProfileState extends State<Profile> {
 
     final email = TextFormField(
       controller: _email,
+      enabled: false,
       keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         hintText: 'Email Address',
@@ -91,18 +91,9 @@ class _ProfileState extends State<Profile> {
       ),
     );
 
-    // final phone = TextFormField(
-    //   controller: _phone,
-    //   keyboardType: TextInputType.phone,
-    //   decoration: InputDecoration(
-    //     hintText: 'No Telepon',
-    //     contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-    //     border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
-    //   ),
-    // );
-
     final mobile = TextFormField(
       controller: _mobile,
+      enabled: false,
       keyboardType: TextInputType.phone,
       decoration: InputDecoration(
         hintText: 'No Hp / Ponsel',
@@ -113,6 +104,7 @@ class _ProfileState extends State<Profile> {
 
     final address = TextFormField(
       controller: _address,
+      enabled: false,
       keyboardType: TextInputType.streetAddress,
       decoration: InputDecoration(
         hintText: 'Alamat',
@@ -123,6 +115,7 @@ class _ProfileState extends State<Profile> {
 
     final ktp = TextFormField(
       controller: _ktp,
+      enabled: false,
       keyboardType: TextInputType.text,
       decoration: InputDecoration(
         hintText: 'No KTP',
@@ -133,6 +126,7 @@ class _ProfileState extends State<Profile> {
 
     final npwp = TextFormField(
       controller: _npwp,
+      enabled: false,
       keyboardType: TextInputType.text,
       decoration: InputDecoration(
         hintText: 'No NPWP',
@@ -143,6 +137,7 @@ class _ProfileState extends State<Profile> {
 
     final bank = TextFormField(
       controller: _bank,
+      enabled: false,
       keyboardType: TextInputType.text,
       decoration: InputDecoration(
         hintText: 'Nama Bank',
@@ -153,6 +148,7 @@ class _ProfileState extends State<Profile> {
 
     final branch = TextFormField(
       controller: _branch,
+      enabled: false,
       keyboardType: TextInputType.text,
       decoration: InputDecoration(
         hintText: 'Cabang Bank',
@@ -163,6 +159,7 @@ class _ProfileState extends State<Profile> {
 
     final noRek = TextFormField(
       controller: _noRek,
+      enabled: false,
       keyboardType: TextInputType.text,
       decoration: InputDecoration(
         hintText: 'No Rekening',
@@ -173,64 +170,13 @@ class _ProfileState extends State<Profile> {
 
     final anRek = TextFormField(
       controller: _anRek,
+      enabled: false,
       keyboardType: TextInputType.text,
       decoration: InputDecoration(
         hintText: 'A.N Rekening',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
       ),
-    );
-
-    // final uploadKtp = TextFormField(
-    //   controller: _uploadKtp,
-    //   keyboardType: TextInputType.,
-    // );
-    // 
-    // 
-
-    final button = TextButton(
-      child: Text('Update', 
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold
-        )
-      ),
-      style: ButtonStyle(
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18.0),
-            side: BorderSide(color:Colors.blue)
-          )
-        ),
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-      ),
-      onPressed: () {
-        final data = jsonEncode({
-          "Nama": _name.text.toString(),
-          "Email": _email.text.toString(),
-          "NoTelp": _mobile.text.toString(),
-          "Alamat": _address.text.toString(),
-          "NoKTP": _ktp.text.toString(),
-          "NoNPWP": _npwp.text.toString(), 
-          "Bank": _bank.text.toString(),
-          "NoRek": _noRek.text.toString(),
-          "Cabang": _branch.text.toString(),
-          "AtasNama": _anRek.text.toString()
-        });
-
-        print(data.toString());
-        _userRepo.update(data).then((value) {
-          bool status = value.getStatus();
-          if (status == true) {
-            Toast.show('Profile Berhasil Di Update', context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM);
-          }
-          else {
-            Map errMessage = value.getMessage();
-            String msg = errMessage['message'];
-            Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red.shade50);
-          }
-        });
-      }, 
     );
 
     return Scaffold(
@@ -246,27 +192,46 @@ class _ProfileState extends State<Profile> {
           padding: EdgeInsets.only(left: 24.0, right: 24.0),
           children: <Widget>[
             SizedBox(height: 8.0),
+            Text('Nama', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             name,
             SizedBox(height: 8.0),
+            Text('Email', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             email,
             SizedBox(height: 8.0),
+            Text('Hp No', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             mobile,
             SizedBox(height: 8.0),
+            Text('Alamat', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             address,
             SizedBox(height: 8.0),
+            Text('No. KTP', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             ktp,
             SizedBox(height: 8.0),
+            Text('No. NPWP', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             npwp,
             SizedBox(height: 8.0),
+            Text('Bank', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             bank,
             SizedBox(height: 8.0),
+            Text('Cabang Bank', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             branch,
             SizedBox(height: 8.0),
+            Text('No Rekening', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             noRek,
             SizedBox(height: 8.0),
+            Text('Atas Nama Rekening', style: TextStyle(fontSize: 12.0)),
+            SizedBox(height: 5.0),
             anRek,
-            SizedBox(height: 8.0),
-            button
+            SizedBox(height: 8.0)
           ],
         )
       ),

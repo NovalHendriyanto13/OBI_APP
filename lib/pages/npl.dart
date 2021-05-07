@@ -32,6 +32,54 @@ class _NplState extends State<Npl> {
     Drawer _menu = _drawerMenu.initialize(context, Npl.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, null);
 
+    final _dataList = FutureBuilder<M_Npl>(
+      future: _dataNpl,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List<dynamic> _data = snapshot.data.getData();
+          if (_data.length <= 0) {
+            return Center(
+              child: Text('No Data Found'),
+            );
+          }
+          else {
+            return ListView.builder(
+              itemCount: _data.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  child: ListTile(
+                    title: Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_data[index]['TglAuctions'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                        ],),
+                    ),
+                    subtitle: Column(
+                      children: [
+                        SizedBox(height:8.0),
+                        Align(alignment: Alignment.centerLeft, child: Text('Auction : ' + _data[index]['IdAuctions'] )),
+                        SizedBox(height:8.0),
+                        Align(alignment: Alignment.centerLeft, child: Text('NPL : ' + _data[index]['NPL'] )),
+                        SizedBox(height:8.0),
+                        Align(alignment: Alignment.centerLeft, child: Text('Status : ' + _data[index]['Status'] )),
+                      ],
+                    ),
+                  ),
+                );
+              }
+            );
+          }
+        }
+        else if (snapshot.hasError) {
+          return Text(snapshot.error.toString());
+        }
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
     final addButton = FloatingActionButton(
       tooltip: 'Beli NPL',
       child: Icon(Icons.add),
@@ -47,37 +95,12 @@ class _NplState extends State<Npl> {
       ),
       drawer: _menu,
       bottomNavigationBar: _bottomNav,
-      body: Center(
+      body: Container(
+        padding: EdgeInsets.all(8.0),
+        color: Colors.blueGrey.shade50,
         child: Container(
-          padding: EdgeInsets.only(left: 24.0, right: 24.0),
-          child: FutureBuilder<M_Npl>(
-            future: _dataNpl,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                List<dynamic> _data = snapshot.data.getData();
-
-                return ListView.builder(
-                  itemBuilder: (context, index) {
-                    return Container(
-                      padding: EdgeInsets.all(10.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(_data[index]['TransID']),
-                        ],
-                      ),
-                    );
-                  }
-                );
-              }
-              else if (snapshot.hasError) {
-                return Text('Error...');
-              }
-              return Text('Loading...');
-            },
-          ),
-        ),
+          child: _dataList,
+        )
       ),
       floatingActionButton: addButton,
     );

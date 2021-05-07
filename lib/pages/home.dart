@@ -100,6 +100,10 @@ class _HomeState extends State<Home> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               List<dynamic> _data = snapshot.data.getListData();
+              print(_data);
+              if (_data == null) {
+                _refreshToken.run();
+              }
               if (_data.length.isOdd) {
                 _data.add({
                   "Kota":"",

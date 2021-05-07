@@ -7,7 +7,7 @@ import 'package:toast/toast.dart';
 
 class Change extends StatefulWidget {
   static String tag = 'change-page';
-  static String name = 'Ubah Password';
+  static String name = 'Change Password';
 
   @override
   _ChangeState createState() => new _ChangeState();
@@ -23,6 +23,7 @@ class _ChangeState extends State<Change> {
   TextEditingController _oldPassword = TextEditingController();
   TextEditingController _newPassword = TextEditingController();
   TextEditingController _rePassword = TextEditingController();
+  int _processState = 0;
 
   @override
   initState() {
@@ -31,10 +32,34 @@ class _ChangeState extends State<Change> {
     // relogin();
   }
 
+  final logo = Hero(
+    tag: 'otobid_logo', 
+    child: CircleAvatar(
+      backgroundColor: Colors.transparent,
+      radius: 48.0,
+      child: Image.asset('assets/images/logo.png'),
+    ) 
+  );
+
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Change.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Home.tag);
+
+    Widget buttonText() {
+      if(_processState == 1) {
+        return CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        );
+      }  
+      
+      return new Text('Change Password',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold
+        )
+      );
+    }
 
     final oldPassword = TextFormField(
       controller: _oldPassword,
@@ -66,39 +91,38 @@ class _ChangeState extends State<Change> {
       ),
     );
 
-    final button = TextButton(
-      child: Text('Update', 
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold
-        )
-      ),
-      style: ButtonStyle(
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18.0),
-            side: BorderSide(color:Colors.blue)
-          )
-        ),
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-      ),
-      onPressed: () {
-        String uOldPassword = _oldPassword.text.toString();
-        String uNewPassword = _newPassword.text.toString();
-        String uRePassword = _rePassword.text.toString();
+    final button = Padding(
+      padding: EdgeInsets.symmetric(vertical: 16.0),
+      child: MaterialButton(
+          onPressed: () {
+            String uOldPassword = _oldPassword.text.toString();
+            String uNewPassword = _newPassword.text.toString();
+            String uRePassword = _rePassword.text.toString();
 
-        _userRepo.changePassword(uOldPassword, uNewPassword, uRePassword).then((value) {
-          bool status = value.getStatus();
-          if (status == true) {
-            Toast.show('Password Anda Berhasil di Ubah', context, duration: Toast.LENGTH_LONG , gravity: Toast.TOP);
-          }
-          else {
-            Map errMessage = value.getMessage();
-            String msg = errMessage['message'];
-            Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
-          }
-        });
-      }, 
+            setState(() {
+              _processState = 1;
+            });
+
+            _userRepo.changePassword(uOldPassword, uNewPassword, uRePassword).then((value) {
+              bool status = value.getStatus();
+              if (status == true) {
+                Toast.show('Password Anda Berhasil di Ubah', context, duration: Toast.LENGTH_LONG , gravity: Toast.TOP);
+              }
+              else {
+                Map errMessage = value.getMessage();
+                String msg = errMessage['message'];
+                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
+              }
+
+              setState(() {
+                _processState = 0;
+              });
+            });
+          },
+          child: buttonText(),
+          color: Colors.blue,
+          height: 48.0,
+      ),
     );
 
     return Scaffold(
@@ -116,13 +140,20 @@ class _ChangeState extends State<Change> {
             shrinkWrap: true,
             padding: EdgeInsets.only(left: 24.0, right: 24.0),
             children: <Widget>[
-              SizedBox(height: 8.0),
+              logo,
+              SizedBox(height: 48.0),
+              Text('Password Lama', style: TextStyle(fontSize: 12.0)),
+              SizedBox(height: 5.0),
               oldPassword,
               SizedBox(height: 8.0),
+              Text('Password Baru', style: TextStyle(fontSize: 12.0)),
+              SizedBox(height: 5.0),
               newPassword,
               SizedBox(height: 8.0),
+              Text('Ulang Password Baru', style: TextStyle(fontSize: 12.0)),
+              SizedBox(height: 5.0),
               rePassword,
-              SizedBox(height: 8.0),
+              SizedBox(height: 10.0),
               button
             ],
           )

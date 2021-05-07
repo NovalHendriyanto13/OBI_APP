@@ -36,5 +36,27 @@ class UnitRepo {
       throw Exception('Connect to Api Failed');
     }
   }
+
+  Future<M_Unit> detail(id) async{
+    Session _session = new Session();
+    String token = await _session.getString('token');
+    
+    Map<String, String> header = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    };
+
+    final response = await http.post(
+      Uri.http(apiUrl, 'unit/' + id.toString()),
+      headers: header,
+    );
+
+    if (response.statusCode==200) {
+      return M_Unit.fromJson(jsonDecode(response.body));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
    
 }

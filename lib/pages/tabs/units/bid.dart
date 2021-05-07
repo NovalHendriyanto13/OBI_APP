@@ -1,15 +1,59 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:obi_mobile/models/m_unit.dart';
 
 class Bid extends StatelessWidget {
   final Map data;
+  final Future<M_Unit> detail;
   int _process = 0;
 
-  Bid({this.data});
+  Bid({this.data, this.detail});
 
   @override
   Widget build(BuildContext context) {
     TextEditingController _npl = TextEditingController();
     TextEditingController _bid = TextEditingController();
+    print(this.data);
+    final carouselSlider = FutureBuilder<M_Unit>(
+      future: this.detail,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List _data = snapshot.data.getListData();
+          return CarouselSlider(
+            items: _data[0]['galleries'].map<Widget>((i) {
+              return Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(i['Image']),
+                      fit: BoxFit.fill
+                    )
+                  )
+                );
+            }).toList(),
+            options: CarouselOptions(
+              height: 300,
+              aspectRatio: 16/9,
+              viewportFraction: 0.8,
+              initialPage: 0,
+              enableInfiniteScroll: true,
+              reverse: false,
+              autoPlay: true,
+              autoPlayInterval: Duration(seconds: 3),
+              autoPlayAnimationDuration: Duration(milliseconds: 800),
+              autoPlayCurve: Curves.fastOutSlowIn,
+              enlargeCenterPage: true,
+              scrollDirection: Axis.horizontal,
+            ),
+          );
+        }
+        else if (snapshot.hasError) {
+          return Text(snapshot.error.toString());
+        }
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+    );
 
     final npl = TextFormField(
       controller: _npl,
@@ -70,13 +114,10 @@ class Bid extends StatelessWidget {
       ),
     );
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Harga Limit : ' + this.data['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-        SizedBox(height: 15.0),
-        Card(
+    Widget bidPage() {
+      print(this.data);
+      // if (this[''])
+      return Card(
           child: ListTile(
             title: Text('Auction #' + this.data['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Column(
@@ -98,7 +139,16 @@ class Bid extends StatelessWidget {
               ],
             ),
           )
-        )
+        );
+    }
+
+    return ListView(
+      padding: EdgeInsets.all(10.0),
+      children: [
+        carouselSlider,
+        Text('Harga Dasar : ' + this.data['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+        SizedBox(height: 15.0),
+        bidPage()
       ],
     );
   }
