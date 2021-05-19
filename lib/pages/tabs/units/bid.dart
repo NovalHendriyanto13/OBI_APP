@@ -116,7 +116,8 @@ class Bid extends StatelessWidget {
     );
 
     Widget bidPage() {
-      if (this.data['IdAuctions'].toString().trim() == 'TNG-371') {
+      print(this.data);
+      if (this.data['Online'].toString().trim() == 'floor') {
         return Center(
           child: TextButton(
             child: Text(

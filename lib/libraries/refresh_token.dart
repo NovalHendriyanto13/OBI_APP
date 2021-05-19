@@ -19,7 +19,7 @@ class RefreshToken {
 
     final _diff = _d2.difference(_d1).inSeconds;
     print(_diff.toString() + '<>' + _expireIn.toString());
-    if (_diff > _expireIn) {
+    if (_diff < 0) {
       await refreshToken();
     }
   }

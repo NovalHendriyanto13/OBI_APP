@@ -43,6 +43,7 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
 
     final Map param = ModalRoute.of(context).settings.arguments;
     final String id = param['IdUnit'];
+    print(param);
     _dataUnit = _unitRepo.detail(id);
     
     return Scaffold(
@@ -53,7 +54,7 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text("LOT : "  + param["NoLot"], style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            Text(param["Merk"] + " " + param['Tipe'])
+            Text(param["Merk"].toString().toUpperCase() + " " + param['Tipe'])
           ],
         ),
         bottom: TabBar(

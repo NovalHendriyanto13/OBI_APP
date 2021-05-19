@@ -104,7 +104,6 @@ class _HomeState extends State<Home> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               List<dynamic> _data = snapshot.data.getListData();
-              print(_data);
               if (_data == null) {
                 _refreshToken.run();
               }

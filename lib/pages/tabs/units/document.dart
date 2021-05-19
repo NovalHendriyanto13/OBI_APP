@@ -56,8 +56,9 @@ class Document extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List _data = snapshot.data.getListData();
+          print(_data);
           return CarouselSlider(
-            items: _data[0]['galleries'].map<Widget>((i) {
+            items: _data[0]['documents'].map<Widget>((i) {
               return Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
