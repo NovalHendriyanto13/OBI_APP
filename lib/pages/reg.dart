@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 
 class Reg extends StatefulWidget {
   static String tag = 'reg-page';
@@ -10,6 +11,7 @@ class Reg extends StatefulWidget {
 }
 
 class _RegState extends State<Reg> {
+  CheckInternet _checkInternet = CheckInternet();
 
   TextEditingController _name = TextEditingController();
   TextEditingController _email = TextEditingController();
@@ -24,6 +26,12 @@ class _RegState extends State<Reg> {
   TextEditingController _anRek = TextEditingController();
 
   bool _toc = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkInternet.check(context);
+  }
   
   @override
   Widget build(BuildContext context) {

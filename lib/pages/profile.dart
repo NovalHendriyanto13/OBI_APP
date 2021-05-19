@@ -1,9 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/repository/user_repo.dart';
 
 class Profile extends StatefulWidget {
@@ -16,9 +15,10 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
 
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  BottomMenu _bottomMenu = new BottomMenu();
-  UserRepo _userRepo = new UserRepo();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  BottomMenu _bottomMenu = BottomMenu();
+  CheckInternet _checkInternet = CheckInternet();
+  UserRepo _userRepo = UserRepo();
 
   TextEditingController _name;
   TextEditingController _email;
@@ -35,6 +35,7 @@ class _ProfileState extends State<Profile> {
   @override
   void initState() {
     super.initState();
+    _checkInternet.check(context);
     getProfile();
   }
 

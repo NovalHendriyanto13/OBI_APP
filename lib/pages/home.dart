@@ -4,6 +4,7 @@ import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/search_bar.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/pages/buy_npl.dart';
 import 'package:obi_mobile/pages/auction_detail.dart';
@@ -21,11 +22,12 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  BottomMenu _bottomMenu = new BottomMenu();
-  AuctionRepo _auctionRepo = new AuctionRepo();
-  BrandRepo _brandRepo = new BrandRepo();
-  RefreshToken _refreshToken = new RefreshToken();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  BottomMenu _bottomMenu = BottomMenu();
+  AuctionRepo _auctionRepo = AuctionRepo();
+  BrandRepo _brandRepo = BrandRepo();
+  RefreshToken _refreshToken = RefreshToken();
+  CheckInternet _checkInternet = CheckInternet();
   Future<M_Auction> _dataAuction;
   List _dataBrand = [{"Merk":"Semua Merk"}];
   List<int> _dataYear = List<int>.generate(30, (index) => 2021-index);
@@ -37,6 +39,8 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    _checkInternet.check(context);
+    
     _refreshToken.run();
 
     _dataAuction = _auctionRepo.list();

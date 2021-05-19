@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/repository/unit_repo.dart';
 import 'package:obi_mobile/pages/tabs/units/info.dart' as info;
@@ -15,9 +16,10 @@ class Unit extends StatefulWidget {
 }
 
 class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  RefreshToken _refreshToken = new RefreshToken();
-  UnitRepo _unitRepo = new UnitRepo();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  RefreshToken _refreshToken = RefreshToken();
+  CheckInternet _checkInternet = CheckInternet();
+  UnitRepo _unitRepo = UnitRepo();
   TabController _tabController;
   Future<M_Unit> _dataUnit;
 
@@ -29,6 +31,8 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
   @override
   void initState() {
     super.initState();
+    _checkInternet.check(context);
+    
     _refreshToken.run();
     _tabController = TabController(vsync: this, length: _tabList.length);
   }

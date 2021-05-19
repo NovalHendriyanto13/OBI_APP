@@ -4,6 +4,7 @@ import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/repository/auction_repo.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 
 class BuyNpl extends StatefulWidget {
   static String tag = 'buy-npl-page';
@@ -16,9 +17,10 @@ class BuyNpl extends StatefulWidget {
 class _BuyNplState extends State<BuyNpl> {
   
   // repo and model
-  AuctionRepo _auctionRepo = new AuctionRepo();
-  BottomMenu _bottomMenu = new BottomMenu();
-  DrawerMenu _drawerMenu = new DrawerMenu();
+  AuctionRepo _auctionRepo = AuctionRepo();
+  BottomMenu _bottomMenu = BottomMenu();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  CheckInternet _checkInternet = CheckInternet();
 
   // controller
   TextEditingController _auctions = TextEditingController();
@@ -38,6 +40,8 @@ class _BuyNplState extends State<BuyNpl> {
   @override
   void initState() {
     super.initState();
+
+    _checkInternet.check(context);
 
     // _loadData();
   }

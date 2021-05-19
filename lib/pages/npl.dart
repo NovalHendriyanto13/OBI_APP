@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/models/m_npl.dart';
 import 'package:obi_mobile/pages/buy_npl.dart';
 import 'package:obi_mobile/repository/npl_repo.dart';
@@ -14,15 +15,18 @@ class Npl extends StatefulWidget {
 }
 
 class _NplState extends State<Npl> {
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  BottomMenu _bottomMenu = new BottomMenu();
-  NplRepo _nplRepo = new NplRepo();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  BottomMenu _bottomMenu = BottomMenu();
+  CheckInternet _checkInternet = CheckInternet();
+  NplRepo _nplRepo = NplRepo();
   Future<M_Npl> _dataNpl;
 
   @override
   void initState() {
     super.initState();
 
+    _checkInternet.check(context);
+    
     _dataNpl = _nplRepo.list();
   }
 

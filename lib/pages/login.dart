@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 import 'package:obi_mobile/libraries/session.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/pages/reg.dart';
 import 'package:obi_mobile/pages/forgot.dart';
 import 'package:obi_mobile/pages/home.dart';
@@ -20,6 +21,7 @@ class _LoginState extends State<Login> {
   UserRepo _userRepo = UserRepo();
   Session _session = Session();
   RefreshToken _refreshToken = RefreshToken();
+  CheckInternet _checkInternet = CheckInternet();
 
   TextEditingController _username = TextEditingController();
   TextEditingController _password = TextEditingController();
@@ -29,6 +31,7 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
+    _checkInternet.check(context);
   }
 
   final logo = Hero(

@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/models/m_unit.dart';
+import 'package:obi_mobile/pages/live_bid.dart';
 
 class Bid extends StatelessWidget {
   final Map data;
@@ -13,7 +14,7 @@ class Bid extends StatelessWidget {
   Widget build(BuildContext context) {
     TextEditingController _npl = TextEditingController();
     TextEditingController _bid = TextEditingController();
-    print(this.data);
+
     final carouselSlider = FutureBuilder<M_Unit>(
       future: this.detail,
       builder: (context, snapshot) {
@@ -115,31 +116,44 @@ class Bid extends StatelessWidget {
     );
 
     Widget bidPage() {
-      print(this.data);
-      // if (this[''])
-      return Card(
-          child: ListTile(
-            title: Text('Auction #' + this.data['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text('Closed In : 00 00 00'),
-                SizedBox(height: 10.0),
-                npl,
-                SizedBox(height: 10.0),
-                bid,
-                SizedBox(height: 10.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    btnSubmit,
-                    btnCancel
-                  ],
-                )
-              ],
+      if (this.data['IdAuctions'].toString().trim() == 'TNG-371') {
+        return Center(
+          child: TextButton(
+            child: Text(
+              'Ikut Live Auction Sekarang',
+              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
             ),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(), settings: RouteSettings(arguments: this.data)));
+            },
           )
         );
+      }
+      else {
+        return Card(
+            child: ListTile(
+              title: Text('Auction #' + this.data['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text('Closed In : 00 00 00'),
+                  SizedBox(height: 10.0),
+                  npl,
+                  SizedBox(height: 10.0),
+                  bid,
+                  SizedBox(height: 10.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      btnSubmit,
+                      btnCancel
+                    ],
+                  )
+                ],
+              ),
+            )
+          );
+      }
     }
 
     return ListView(

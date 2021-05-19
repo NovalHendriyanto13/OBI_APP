@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/models/m_bid.dart';
 import 'package:obi_mobile/repository/bid_repo.dart';
@@ -15,16 +16,19 @@ class Bid extends StatefulWidget {
 
 class _BidState extends State<Bid> {
 
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  BottomMenu _bottomMenu = new BottomMenu();
-  RefreshToken _refreshToken = new RefreshToken();
-  BidRepo _bidRepo = new BidRepo();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  BottomMenu _bottomMenu = BottomMenu();
+  RefreshToken _refreshToken = RefreshToken();
+  CheckInternet _checkInternet = CheckInternet();
+  BidRepo _bidRepo = BidRepo();
 
   Future<M_Bid> _dataBid;
 
   @override
   void initState() {
     super.initState();
+
+    _checkInternet.check(context);
 
     _refreshToken.run();
     _dataBid = _bidRepo.list();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/search_bar.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/pages/unit.dart';
 import 'package:obi_mobile/repository/auction_repo.dart';
@@ -17,13 +18,15 @@ class AuctionDetail extends StatefulWidget {
 
 class _AuctionDetailState extends State<AuctionDetail> {
 
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  BottomMenu _bottomMenu = new BottomMenu();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  BottomMenu _bottomMenu = BottomMenu();
   AuctionRepo _auctionRepo = AuctionRepo();
+  CheckInternet _checkInternet = CheckInternet();
   
   @override
   void initState() {
     super.initState(); 
+    _checkInternet.check(context);
   }
 
   @override

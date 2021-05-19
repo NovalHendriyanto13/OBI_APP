@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/libraries/search_bar.dart';
 import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/pages/auction_detail.dart';
@@ -16,16 +17,19 @@ class Room extends StatefulWidget {
 }
 
 class _RoomState extends State<Room> {
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  BottomMenu _bottomMenu = new BottomMenu();
-  RefreshToken _refreshToken = new RefreshToken();
-  AuctionRepo _auctionRepo = new AuctionRepo();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  BottomMenu _bottomMenu = BottomMenu();
+  RefreshToken _refreshToken = RefreshToken();
+  CheckInternet _checkInternet = CheckInternet();
+  AuctionRepo _auctionRepo = AuctionRepo();
 
   Future<M_Auction> _dataList;
   
   @override
   void initState() {
     super.initState();
+
+    _checkInternet.check(context);
 
     _refreshToken.run();
 

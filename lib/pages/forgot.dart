@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/repository/user_repo.dart';
 import 'package:toast/toast.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 
 class Forgot extends StatefulWidget {
   static String tag = 'forgot-page';
@@ -13,6 +14,13 @@ class Forgot extends StatefulWidget {
 class _ForgotState extends State<Forgot> {
 
   UserRepo _userRepo = UserRepo();
+  CheckInternet _checkInternet = CheckInternet();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkInternet.check(context);
+  }
 
   final logo = Hero(
     tag: 'otobid_logo', 

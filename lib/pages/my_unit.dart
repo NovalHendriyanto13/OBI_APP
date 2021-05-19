@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/repository/unit_repo.dart';
 
@@ -14,16 +15,18 @@ class MyUnit extends StatefulWidget {
 }
 
 class _MyUnitState extends State<MyUnit> {
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  BottomMenu _bottomMenu = new BottomMenu();
-  RefreshToken _refreshToken = new RefreshToken();
-  UnitRepo _unitRepo = new UnitRepo();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  BottomMenu _bottomMenu = BottomMenu();
+  RefreshToken _refreshToken = RefreshToken();
+  CheckInternet _checkInternet = CheckInternet();
+  UnitRepo _unitRepo = UnitRepo();
 
   Future<M_Unit> _dataUnit;
 
   @override
   void initState() {
     super.initState();
+    _checkInternet.check(context);
     _refreshToken.run();
     _dataUnit = _unitRepo.list();
   }

@@ -3,6 +3,7 @@ import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/models/m_area.dart';
 import 'package:obi_mobile/repository/area_repo.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 
 class Area extends StatefulWidget {
   static String tag = 'area-page';
@@ -17,12 +18,13 @@ class _AreaState extends State<Area> {
   DrawerMenu _drawerMenu = DrawerMenu();
   BottomMenu _bottomMenu = BottomMenu();
   AreaRepo _areaRepo = AreaRepo();
+  CheckInternet _checkInternet = CheckInternet();
   Future<M_Area> _dataArea;
   
   @override
   void initState() {
     super.initState();
-
+    _checkInternet.check(context);
     _dataArea = _areaRepo.list();
   }
 

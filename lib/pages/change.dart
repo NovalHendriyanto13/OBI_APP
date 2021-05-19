@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/repository/user_repo.dart';
 import 'package:obi_mobile/pages/home.dart';
 import 'package:toast/toast.dart';
@@ -15,8 +16,9 @@ class Change extends StatefulWidget {
 
 class _ChangeState extends State<Change> {
 
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  BottomMenu _bottomMenu = new BottomMenu();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  BottomMenu _bottomMenu = BottomMenu();
+  CheckInternet _checkInternet = CheckInternet();
 
   UserRepo _userRepo = UserRepo();
 
@@ -28,8 +30,8 @@ class _ChangeState extends State<Change> {
   @override
   initState() {
     super.initState();
-    // relogin
-    // relogin();
+    _checkInternet.check(context);
+
   }
 
   final logo = Hero(

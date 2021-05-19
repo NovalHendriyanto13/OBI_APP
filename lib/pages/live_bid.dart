@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
+import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/repository/unit_repo.dart';
 import 'package:obi_mobile/pages/tabs/units/info.dart' as info;
@@ -16,9 +17,10 @@ class LiveBid extends StatefulWidget {
 }
 
 class _LiveBidState extends State<LiveBid>{
-  DrawerMenu _drawerMenu = new DrawerMenu();
-  RefreshToken _refreshToken = new RefreshToken();
-  UnitRepo _unitRepo = new UnitRepo();
+  DrawerMenu _drawerMenu = DrawerMenu();
+  RefreshToken _refreshToken = RefreshToken();
+  CheckInternet _checkInternet = CheckInternet();
+  UnitRepo _unitRepo = UnitRepo();
   Future<M_Unit> _dataUnit;
   int _process = 0;
   bool _enableBid = false;
@@ -26,6 +28,7 @@ class _LiveBidState extends State<LiveBid>{
   @override
   void initState() {
     super.initState();
+    _checkInternet.check(context);
     _refreshToken.run();
   }
 
@@ -35,7 +38,8 @@ class _LiveBidState extends State<LiveBid>{
     TextEditingController _npl = TextEditingController();
 
     final Map param = ModalRoute.of(context).settings.arguments;
-    _dataUnit = _unitRepo.detail(param['IdUnit']);
+    final String id = param['IdUnit'];
+    _dataUnit = _unitRepo.detail(id);
 
     final carouselSlider = FutureBuilder<M_Unit>(
       future: _dataUnit,
@@ -117,14 +121,7 @@ class _LiveBidState extends State<LiveBid>{
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text("LOT : "  + param["NoLot"], style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            Text(param["Merk"] + " " + param['Tipe'])
-          ],
-        ),
+        title: Text(LiveBid.name)
       ),
       drawer: _menu,
       body: Container(
@@ -167,56 +164,54 @@ class _LiveBidState extends State<LiveBid>{
                 SizedBox(height: 8.0),
                 Text('info : '),
                 SizedBox(height: 8.0),
-                Card(
-                  child: ListTile(
-                    title: Text('Auction #' + param['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text('Closed In : 00 00 00'),
-                        SizedBox(height: 10.0),
-                        npl,
-                        SizedBox(height: 10.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            btnSubmit,
-                          ],
-                        )
-                      ],
-                    ),
-                  )
-                )
               ],
             ),
-            Container(
-              height: 40.0, 
-              color: Colors.red,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Switch(
-                    value: _enableBid, 
-                    onChanged: (value) {
-                      setState(() {
-                        _enableBid = value;
-                      });
-                    },
-                    activeTrackColor: Colors.lightGreenAccent,
-                    activeColor: Colors.green,
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      npl,
-                      btnSubmit
-                    ]
-                  ),
-                ],
-              ) 
-            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Switch(
+                  value: _enableBid, 
+                  onChanged: (value) {
+                    setState(() {
+                      _enableBid = value;
+                    });
+                  },
+                  activeTrackColor: Colors.lightGreenAccent,
+                  activeColor: Colors.green,
+                ),
+              ],              
+            )
+            // Expanded(
+            //   child: SizedBox(
+            //   height: 150.0, 
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.end,
+            //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //     children: [
+            //       Switch(
+            //         value: _enableBid, 
+            //         onChanged: (value) {
+            //           setState(() {
+            //             _enableBid = value;
+            //           });
+            //         },
+            //         activeTrackColor: Colors.lightGreenAccent,
+            //         activeColor: Colors.green,
+            //       ),
+            //       Row(
+            //           // crossAxisAlignment: CrossAxisAlignment.start,
+            //           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //         children: [
+            //           npl,
+            //           btnSubmit
+            //         ]
+            //       ),
+                  
+            //     ],
+            //   )
+            //   )
+            // ),
           ]
         )
       )
