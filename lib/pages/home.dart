@@ -33,8 +33,16 @@ class _HomeState extends State<Home> {
   List<int> _dataYear = List<int>.generate(30, (index) => 2021-index);
   String _selectedBrand = "";
   int _selectedYear = 0;
-  List _dataSeri = [{"Tipe":"Semua Seri"}];
-  String _selectedSeri = "";
+  List _dataType = [{"Tipe":"Semua Seri"}];
+  String _selectedType = "";
+  final _dataPrice = {
+     "":"Semua Harga" ,
+     "<50000000": "< 50.000.000" ,
+     "50000001-100000000": "50.000.001 - 100.000.000" ,
+     "100000001-150000000": "100.000.001 - 150.000.000" ,
+     ">150000000": "> 150.000.000" 
+  };
+  String _selectedPrice = "";
 
   @override
   void initState() {
@@ -53,6 +61,14 @@ class _HomeState extends State<Home> {
       if (status == true) {
         setState(() {
           _dataBrand.addAll(value.getListData());
+        });
+      }
+    });
+    _brandRepo.type().then((value) {
+      bool status = value.getStatus();
+      if (status == true) {
+        setState(() {
+          _dataType.addAll(value.getListData());
         });
       }
     });
@@ -97,28 +113,21 @@ class _HomeState extends State<Home> {
 
     Widget _schedule = Expanded(
       child: SizedBox(
-        // color: Colors.blueGrey.shade50,
         height: 300.0,
         child: FutureBuilder<M_Auction>(
           future: _dataAuction,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               List<dynamic> _data = snapshot.data.getListData();
-              if (_data == null) {
+              if (_data == null || _data.length <= 0) {
                 _refreshToken.run();
-              }
-              if (_data.length.isOdd) {
-                _data.add({
-                  "Kota":"",
-                  "TglAuctions":"",
-                });
               }
               return GridView.builder(
                 // scrollDirection: Axis.horizontal,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  crossAxisSpacing: 4.0,
-                  mainAxisSpacing: 4.0,
+                  crossAxisSpacing: 2.0,
+                  mainAxisSpacing: 2.0,
                 ), 
                 itemBuilder: (BuildContext context, int index) {
                   return Card(
@@ -130,6 +139,7 @@ class _HomeState extends State<Home> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Image.asset('assets/images/auction_img.png'),
                             Text(_data[index]['Kota'], 
                               style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.red.shade400)),
                             // SizedBox(height: 10.0),
@@ -153,9 +163,7 @@ class _HomeState extends State<Home> {
             else if (snapshot.hasError) {
               return Text(snapshot.error.toString());
             }
-            return Center(
-              child: CircularProgressIndicator(),
-            );
+            return Center(child: Text('No Data Found'));
           },
         ) 
       )
@@ -174,13 +182,6 @@ class _HomeState extends State<Home> {
         );
       }).toList(),
       hint: Text('Pilih Merk'),
-      // decoration: InputDecoration(
-      //   border: OutlineInputBorder(
-      //     borderRadius: const BorderRadius.all(
-      //       const Radius.circular(5.0),
-      //     ),
-      //   ),
-      // ),
       onChanged: (selected) {
         setState(() {
           _selectedBrand = selected;
@@ -190,30 +191,23 @@ class _HomeState extends State<Home> {
     );
 
     // final series = DropdownButtonFormField(
-    //   items: _dataSeri.map((e) {
+    //   items: _dataType.map((e) {
     //     String v = e["Tipe"].toString();
     //     if (e["Tipe"] == "Semua Tipe") {
     //       v = "";
     //     }
     //     return DropdownMenuItem(
-    //       child: Text(e["Merk"]),
+    //       child: Text(e["Tipe"]),
     //       value: v, 
     //     );
     //   }).toList(),
-    //   hint: Text('Pilih Merk'),
-    //   // decoration: InputDecoration(
-    //   //   border: OutlineInputBorder(
-    //   //     borderRadius: const BorderRadius.all(
-    //   //       const Radius.circular(5.0),
-    //   //     ),
-    //   //   ),
-    //   // ),
+    //   hint: Text('Pilih Tipe'),
     //   onChanged: (selected) {
     //     setState(() {
-    //       _selectedSeri = selected;
+    //       _selectedType = selected;
     //     });
     //   },
-    //   value: _selectedSeri,
+    //   value: _selectedType,
     // );
 
     final year = DropdownButtonFormField(
@@ -239,6 +233,22 @@ class _HomeState extends State<Home> {
       value: _selectedYear,
     );
 
+    final price = DropdownButtonFormField(
+      items: _dataPrice.entries.map((e) {
+        return DropdownMenuItem(
+          child: Text(e.value),
+          value: e.key,
+        );
+      }).toList(),
+      hint: Text('Pilih harga'),
+      onChanged: (selected) {
+        setState(() {
+          _selectedPrice = selected;
+        });
+      },
+      value: _selectedPrice,
+    );
+
     final button = MaterialButton(
       child: Text('Cari', 
         style: TextStyle(
@@ -258,6 +268,10 @@ class _HomeState extends State<Home> {
 
         if (_selectedYear != 0) {
           params.add({"Tahun": _selectedYear});
+        }
+
+        if (_selectedPrice != "") {
+          params.add({"Harga": _selectedPrice});
         }
         Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionUnit(), settings: RouteSettings(arguments: params)));
       }
@@ -281,8 +295,8 @@ class _HomeState extends State<Home> {
             Row(
               children: [
                 // Expanded(child: series),
-                SizedBox(width: 10.0),
-                // Expanded(child: merk)
+                // SizedBox(width: 10.0),
+                Expanded(child: price)
               ],
             ),
             SizedBox(height: 10.0),

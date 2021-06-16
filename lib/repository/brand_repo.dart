@@ -54,5 +54,28 @@ class BrandRepo {
       throw Exception('Connect to Api Failed');
     }
   }
+
+  Future<M_Brand> type() async{
+    
+    Session _session = new Session();
+    String token = await _session.getString('token');
+
+    Map<String, String> header = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    };
+
+    final response = await http.post(
+      Uri.http(apiUrl, 'brand-type'),
+      headers: header,
+    );
+
+    if (response.statusCode==200) {
+      return M_Brand.fromJson(jsonDecode(response.body));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
  
 }

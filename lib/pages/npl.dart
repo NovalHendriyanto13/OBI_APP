@@ -78,9 +78,7 @@ class _NplState extends State<Npl> {
         else if (snapshot.hasError) {
           return Text(snapshot.error.toString());
         }
-        return Center(
-          child: CircularProgressIndicator(),
-        );
+        return Center(child: Text('No Data Found'));
       },
     );
 

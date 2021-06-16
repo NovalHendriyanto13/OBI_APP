@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:obi_mobile/repository/user_repo.dart';
 import 'package:toast/toast.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
+import 'package:obi_mobile/pages/login.dart';
+import 'dart:async';
 
 class Forgot extends StatefulWidget {
   static String tag = 'forgot-page';
   static String name = 'Forgot Password';
-
+  
   @override
   _ForgotState createState() => _ForgotState();
 }
@@ -62,11 +64,17 @@ class _ForgotState extends State<Forgot> {
       ),
       onPressed: () {
         String uEmail = _email.text.toString();
+        final delay = 5;
 
         _userRepo.forgot(uEmail).then((value) {
           bool status = value.getStatus();
           if (status == true) {
             Toast.show('Permintaan Password berhasil di kirim', context, duration: Toast.LENGTH_LONG , gravity: Toast.TOP);
+
+            Duration _duration = Duration(seconds: delay);
+            Timer _timer = Timer(_duration, () {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context)=>Login()));
+            });
           }
           else {
             Map errMessage = value.getMessage();

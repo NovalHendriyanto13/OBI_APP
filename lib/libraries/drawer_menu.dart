@@ -10,6 +10,9 @@ import 'package:obi_mobile/pages/bid.dart';
 
 class DrawerMenu {
 
+  String name='';
+  String email='';
+
   void logout() async {
     Session _session = new Session();
     _session.setInt('id', 0);
@@ -27,32 +30,40 @@ class DrawerMenu {
     String _name = await _session.getString('name');
 
     return _name;
-  } 
+  }
+
+  getEmail() async {
+    Session _session = new Session();
+    String _email = await _session.getString('email');
+
+    return _email;
+  }
 
   Drawer initialize(BuildContext context, String pageTag) {
 
-    String name = getName().toString();
-    
+    getName().then((e) => this.name = e );
+    getEmail().then((e) => this.email = e );
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           UserAccountsDrawerHeader(
-            accountEmail: Text(''),
-            accountName: Text(name),
+            accountEmail: Text(this.email),
+            accountName: Text(this.name, style: TextStyle(fontSize: 20.0),),
             currentAccountPicture: Center(
               child: CircleAvatar(
                 backgroundImage: AssetImage('assets/images/profile_default.png'),
             )),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end:Alignment(0.8, 0.0),
-              colors: [
-                Colors.red.shade900,
-                Colors.red.shade400
-              ]
-            )
+                begin: Alignment.topCenter,
+                end:Alignment(0.8, 0.0),
+                colors: [
+                  Colors.red.shade900,
+                  Colors.red.shade400
+                ]
+              )
             )
           ),
           ListTile(

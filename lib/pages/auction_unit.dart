@@ -87,11 +87,9 @@ class _AuctionUnitState extends State<AuctionUnit> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(_list[index]['NoPolisi'].toString()),
+                                          Text('No Polisi : ' + _list[index]['NoPolisi'].toString()),
                                           Text('|'),
-                                          Text(_list[index]['Tahun'].toString()),
-                                          Text('|'),
-                                          Text(_list[index]['Warna'].toString()),
+                                          Text('Tahun : ' + _list[index]['Tahun'].toString()),
                                         ]
                                       ),
                                       Row(
@@ -103,6 +101,7 @@ class _AuctionUnitState extends State<AuctionUnit> {
                                           Text('Msn : ' + _list[index]['GradeMesin'])
                                         ]
                                       ),
+                                      Align(alignment: Alignment.centerLeft, child: Text('Warna : ' + _list[index]['Warna'].toString())),
                                       Align(alignment: Alignment.centerLeft, child: Text('STNK : ' + _list[index]['TglBerlakuSTNK'].toString())),
                                       Align(alignment: Alignment.centerLeft, child: Text('PAJAK : ' + _list[index]['TglBerlakuPajak'].toString())),
                                     ],

@@ -1,12 +1,12 @@
-class M_Npl {
+class M_Article {
   final _body;
   final bool _status;
   final _msg;
 
-  M_Npl(this._status, this._body, this._msg);
+  M_Article(this._status, this._body, this._msg);
 
-  factory M_Npl.fromJson(Map<String, dynamic> map) {
-    return M_Npl(
+  factory M_Article.fromJson(Map<String, dynamic> map) {
+    return M_Article(
       map['status'], 
       map['data'],
       map['message']
@@ -30,7 +30,7 @@ class M_Npl {
     return this._msg;
   }
 
-  List<dynamic> getData() {
+  Map<String, dynamic> getData() {
     return this._body;
   }
 
@@ -38,4 +38,7 @@ class M_Npl {
     return this._body;
   }
 
+  String getStringData() {
+    return this._body;
+  }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
+import 'package:obi_mobile/pages/terms_condition.dart';
+import 'package:toast/toast.dart';
 
 class Reg extends StatefulWidget {
   static String tag = 'reg-page';
@@ -13,6 +15,7 @@ class Reg extends StatefulWidget {
 class _RegState extends State<Reg> {
   CheckInternet _checkInternet = CheckInternet();
 
+  DateTime currentDate = DateTime.now();
   TextEditingController _name = TextEditingController();
   TextEditingController _email = TextEditingController();
   TextEditingController _phone = TextEditingController();
@@ -24,6 +27,8 @@ class _RegState extends State<Reg> {
   TextEditingController _branch = TextEditingController();
   TextEditingController _noRek = TextEditingController();
   TextEditingController _anRek = TextEditingController();
+  TextEditingController _dob;
+  // _dob =  TextEditingController()..text = currentDate.toString();
 
   bool _toc = false;
 
@@ -145,6 +150,33 @@ class _RegState extends State<Reg> {
       ),
     );
 
+    Future<void> _selectDate(BuildContext context) async {
+      final DateTime pickedDate = await showDatePicker(
+          context: context,
+          initialDate: currentDate,
+          firstDate: DateTime(2015),
+          lastDate: DateTime(2050));
+      if (pickedDate != null && pickedDate != currentDate)
+        setState(() {
+          currentDate = pickedDate;
+        });
+    }
+
+    final dob = TextFormField(
+      controller: _dob,
+      keyboardType: TextInputType.datetime,
+      decoration: InputDecoration(
+        hintText: 'Tanggal Lahir',
+        contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
+      ),
+      onTap: () {
+        FocusScope.of(context).requestFocus(new FocusNode());
+
+        _selectDate(context);
+      },
+    );
+
     // final uploadKtp = TextFormField(
     //   controller: _uploadKtp,
     //   keyboardType: TextInputType.,
@@ -163,7 +195,7 @@ class _RegState extends State<Reg> {
               style: TextStyle(color: Colors.blue),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  print('Kesepakatan Lelang');
+                  Navigator.of(context).pushNamed(TermCondition.tag);
                 }
             )
           ]
@@ -194,8 +226,23 @@ class _RegState extends State<Reg> {
         ),
         backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
       ),
-      onPressed: () => {
-
+      onPressed: () {
+        if (_toc == false) {
+          Toast.show("Silakan centang Syarat dan Ketentuan terlebih dahulu!", context, duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM, backgroundColor: Colors.red);
+        }
+        else {
+          String uName = _name.text.toString();
+          String uEmail = _email.text.toString();
+          String uPhone = _phone.text.toString();
+          String uMobile = _mobile.text.toString();
+          String uAddress = _address.text.toString();
+          String uKtp = _ktp.text.toString();
+          String uNpwp = _npwp.text.toString();
+          String uBank = _bank.text.toString();
+          String uBranch = _branch.text.toString();
+          String uNoRek = _noRek.text.toString();
+          String uAnRek = _anRek.text.toString();
+        }
       }, 
     );
 
@@ -214,6 +261,8 @@ class _RegState extends State<Reg> {
               name,
               SizedBox(height: 8.0),
               email,
+              SizedBox(height: 8.0),
+              dob,
               SizedBox(height: 8.0),
               mobile,
               SizedBox(height: 8.0),

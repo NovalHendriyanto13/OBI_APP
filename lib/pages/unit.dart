@@ -43,7 +43,6 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
 
     final Map param = ModalRoute.of(context).settings.arguments;
     final String id = param['IdUnit'];
-    print(param);
     _dataUnit = _unitRepo.detail(id);
     
     return Scaffold(

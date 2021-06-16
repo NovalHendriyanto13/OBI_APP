@@ -87,8 +87,6 @@ class _LoginState extends State<Login> {
       padding: EdgeInsets.symmetric(vertical: 16.0),
       child: MaterialButton(
           onPressed: () {
-            // _session.setBool('isLogin', true);
-            // Navigator.of(context).pushNamed(Home.tag);
             String uname = _username.text.toString();
             String upass = _password.text.toString();
 
@@ -118,7 +116,6 @@ class _LoginState extends State<Login> {
                 _session.setString('name', name);
                 _session.setInt('expireIn', expireIn);
                 _session.setBool('isLogin', isLogin);
-                // _session.setString()
 
                 _refreshToken.setTime();
                 
@@ -128,7 +125,7 @@ class _LoginState extends State<Login> {
               else {
                 Map errMessage = value.getMessage();
                 String msg = errMessage['message'];
-                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red.shade50);
+                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
               }
 
               setState(() {
@@ -180,7 +177,31 @@ class _LoginState extends State<Login> {
             shrinkWrap: true,
             padding: EdgeInsets.only(left: 24.0, right: 24.0),
             children: <Widget>[
-              logo,
+              SizedBox(height: 30.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  logo,
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      const Text('OTOBID', style:TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 32.0,
+                        fontStyle: FontStyle.italic
+                        )
+                      ),
+                      const Text('INDONESIA', style:TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24.0,
+                        fontStyle: FontStyle.italic
+                        )
+                      )
+                    ],
+                  )
+                ],
+              ),
               SizedBox(height: 48.0),
               Align(
                 alignment: Alignment.center,

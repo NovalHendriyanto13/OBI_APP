@@ -48,7 +48,6 @@ class _BuyNplState extends State<BuyNpl> {
 
   _loadData() async {
     _auctionRepo.list().then((value) {
-      // print('asdsadasda');
       // setState(() {
       //   _dataAuction = value.getListData();
       // });

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/models/m_user.dart';
-import 'package:toast/toast.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
@@ -16,14 +15,13 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
 
-  DrawerMenu _drawerMenu = DrawerMenu();
+  DrawerMenu _drawerMenu = new DrawerMenu();
   BottomMenu _bottomMenu = BottomMenu();
   CheckInternet _checkInternet = CheckInternet();
   UserRepo _userRepo = UserRepo();
 
   TextEditingController _name;
   TextEditingController _email;
-  TextEditingController _phone;
   TextEditingController _mobile;
   TextEditingController _address;
   TextEditingController _ktp;
@@ -37,37 +35,8 @@ class _ProfileState extends State<Profile> {
   void initState() {
     super.initState();
     _checkInternet.check(context);
-    // getProfile();
   }
 
-  // getProfile() async{
-  //   _userRepo.detail().then((value) {
-  //     bool status = value.getStatus();
-      
-  //     if (status == true) {
-  //       var data = value.getSingleData();
-
-  //       print(data);
-
-  //       _name = TextEditingController()..text= data['Nama'];
-  //       _email = TextEditingController()..text= data['Email'];
-  //       _mobile = TextEditingController()..text= data['NoTelp'];
-  //       _address = TextEditingController()..text= data['Alamat'];
-  //       _ktp = TextEditingController()..text= data['NoKTP'];
-  //       _npwp = TextEditingController()..text= data['NoNPWP'];
-  //       _bank = TextEditingController()..text= data['Bank'];
-  //       _noRek = TextEditingController()..text= data['NoRek'];
-  //       _branch = TextEditingController()..text= data['Cabang'];
-  //       _anRek = TextEditingController()..text= data['AtasNama'];
-
-  //     }
-  //     else {
-  //       Map errMessage = value.getMessage();
-  //       String msg = errMessage['message'];
-  //       Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
-  //     }
-  //   });
-  // }
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Profile.tag);

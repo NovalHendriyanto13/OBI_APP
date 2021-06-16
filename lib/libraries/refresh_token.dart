@@ -18,7 +18,6 @@ class RefreshToken {
     final _d2 = DateTime.parse(_validTokenTime);
 
     final _diff = _d2.difference(_d1).inSeconds;
-    print(_diff.toString() + '<>' + _expireIn.toString());
     if (_diff < 0) {
       await refreshToken();
     }
@@ -36,7 +35,7 @@ class RefreshToken {
           Map data = value.getData();
           token = data['token'];
           expireIn = data['expire_in'];
-      print(data.toString());
+
           _session.setString('token', token);
           _session.setInt('expireIn', expireIn);
           _session.setBool('isLogin', isLogin);

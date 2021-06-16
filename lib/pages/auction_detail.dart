@@ -45,7 +45,6 @@ class _AuctionDetailState extends State<AuctionDetail> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List _data = snapshot.data.getListData();
-
             return ListView.builder(
               shrinkWrap: true,
               itemCount: _data[0]['detail'].length,
@@ -130,7 +129,6 @@ class _AuctionDetailState extends State<AuctionDetail> {
                             child: Align(alignment: Alignment.centerLeft, child: Text('DETAIL', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade300)))
                           )
                         ])
-
                       ]
                     ),
                   ),

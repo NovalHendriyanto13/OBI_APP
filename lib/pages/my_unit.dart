@@ -103,9 +103,7 @@ class _MyUnitState extends State<MyUnit> {
         else if (snapshot.hasError) {
           return Text(snapshot.error.toString());
         }
-        return Center(
-          child: CircularProgressIndicator(),
-        );
+        return Center(child: Text('No Data Found'));
       }
     );
 

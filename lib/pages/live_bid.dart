@@ -4,10 +4,10 @@ import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/models/m_unit.dart';
+import 'package:obi_mobile/models/m_npl.dart';
 import 'package:obi_mobile/repository/unit_repo.dart';
-import 'package:obi_mobile/pages/tabs/units/info.dart' as info;
-import 'package:obi_mobile/pages/tabs/units/document.dart' as doc;
-import 'package:obi_mobile/pages/tabs/units/bid.dart' as bid;
+import 'package:obi_mobile/repository/bid_repo.dart';
+import 'package:obi_mobile/repository/npl_repo.dart';
 
 class LiveBid extends StatefulWidget {
   static String tag = 'live-bid-page';
@@ -21,9 +21,12 @@ class _LiveBidState extends State<LiveBid>{
   RefreshToken _refreshToken = RefreshToken();
   CheckInternet _checkInternet = CheckInternet();
   UnitRepo _unitRepo = UnitRepo();
+  BidRepo _bidRepo = BidRepo();
+  NplRepo _nplRepo = NplRepo();
   Future<M_Unit> _dataUnit;
   int _process = 0;
   bool _enableBid = false;
+  String _selectedNpl = '';
 
   @override
   void initState() {
@@ -82,14 +85,36 @@ class _LiveBidState extends State<LiveBid>{
       }
     );
 
-    final npl = TextFormField(
-      controller: _npl,
-      keyboardType: TextInputType.text,
-      decoration: InputDecoration(
-        hintText: 'NPL',
-        contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))
-      ),
+    final params = {
+      "auction_id": param['IdAuctions'],
+      "type": "mobil",
+    };
+
+    final npl = FutureBuilder<M_Npl>(
+      future: _nplRepo.activeNpl(params),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List _data = snapshot.data.getListData();
+          return  DropdownButtonFormField(
+            items: _data.map((e) {
+              String v = e["NPL"].toString();
+              return DropdownMenuItem(
+                child: Text(e["NPL"]),
+                value: e["NPL"], 
+              );
+            }).toList(),
+            hint: Text('Pilih NPL'),
+            onChanged: (selected) {
+                this._selectedNpl = selected;
+            });
+        }
+        else if (snapshot.hasError) {
+          return Text(snapshot.error.toString());
+        }
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      }
     );
 
     Widget buttonText() {
@@ -99,7 +124,7 @@ class _LiveBidState extends State<LiveBid>{
         );
       }  
       
-      return new Text('Submit',
+      return new Text('BID',
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold
@@ -108,113 +133,107 @@ class _LiveBidState extends State<LiveBid>{
     }
 
     final btnSubmit = Padding(
-      padding: EdgeInsets.symmetric(vertical: 16.0),
+      padding: EdgeInsets.only(left: 3.0, right: 3.0),
       child: MaterialButton(
-          onPressed: () {
-            
-          },
-          child: buttonText(),
-          color: Colors.blue,
-          height: 48.0,
+        onPressed: () {
+          final data = {
+            "npl": this._selectedNpl,
+            "auction_id": param['IdAuctions'],
+            "unit_id": param['IdUnit'],
+            "type": "mobil",
+            "no_lot": param['NoLot'],
+          };
+
+          print(data);
+
+          _bidRepo.submit(data).then((value) {
+            print(value.toString());
+          });
+        },
+        child: buttonText(),
+        color: Colors.blue,
+        // height: 48.0,
       ),
     );
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
         title: Text(LiveBid.name)
       ),
       drawer: _menu,
-      body: Container(
-        padding: EdgeInsets.only(left: 12.0, right: 12.0),
-        color: Colors.blueGrey.shade50,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            ListView(
-              padding: EdgeInsets.all(10.0),
-              children: [
-                carouselSlider,
-                Text('Harga Dasar : ' + param['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-                SizedBox(height: 15.0),
-                Text('LOT : ' + param['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
-                SizedBox(height: 8.0),
-                Text(param['Merk'] + ' ' + param['Tipe'] + ' ' + param['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 8.0),
-                Row(
-                  children: [
-                    Text('Eks : ' + param['GradeExterior']),
-                    Text(' | '),
-                    Text('Int : ' + param['GradeInterior']),
-                    Text(' | '),
-                    Text('Msn :' + param['GradeMesin'])
-                  ],
-                ),
-                SizedBox(height: 8.0),
-                Text('Kilometer : '),
-                SizedBox(height: 8.0),
-                Text('No Rangka : '),
-                SizedBox(height: 8.0),
-                Text('No Mesin : '),
-                SizedBox(height: 8.0),
-                Text('STNK : ' + param['TglBerlakuSTNK'].toString()),
-                SizedBox(height: 8.0),
-                Text('Nota Pajak : ' + param['TglBerlakuPajak'].toString()),
-                SizedBox(height: 8.0),
-                Text('BPKB : '),
-                SizedBox(height: 8.0),
-                Text('info : '),
-                SizedBox(height: 8.0),
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Switch(
-                  value: _enableBid, 
-                  onChanged: (value) {
-                    setState(() {
-                      _enableBid = value;
-                    });
-                  },
-                  activeTrackColor: Colors.lightGreenAccent,
-                  activeColor: Colors.green,
-                ),
-              ],              
+      body: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          ListView(
+            padding: EdgeInsets.all(10.0),
+            children: [
+              carouselSlider,
+              Text('Harga Dasar : ' + param['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+              SizedBox(height: 15.0),
+              Text('LOT : ' + param['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
+              SizedBox(height: 8.0),
+              Text(param['Merk'] + ' ' + param['Tipe'] + ' ' + param['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
+              SizedBox(height: 8.0),
+              Row(
+                children: [
+                  Text('Eks : ' + param['GradeExterior']),
+                  Text(' | '),
+                  Text('Int : ' + param['GradeInterior']),
+                  Text(' | '),
+                  Text('Msn :' + param['GradeMesin'])
+                ],
+              ),
+              SizedBox(height: 8.0),
+              Text('Kilometer : '),
+              SizedBox(height: 8.0),
+              Text('No Rangka : '),
+              SizedBox(height: 8.0),
+              Text('No Mesin : '),
+              SizedBox(height: 8.0),
+              Text('STNK : ' + param['TglBerlakuSTNK'].toString()),
+              SizedBox(height: 8.0),
+              Text('Nota Pajak : ' + param['TglBerlakuPajak'].toString()),
+              SizedBox(height: 8.0),
+              Text('BPKB : '),
+              SizedBox(height: 8.0),
+              Text('info : '),
+              SizedBox(height: 8.0),
+            ],
+          ),
+          Container(
+            color: Colors.red,
+            height: 101.0,
+            child: Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Switch(
+                    value: _enableBid, 
+                    onChanged: (value) {
+                      setState(() {
+                        _enableBid = value;
+                      });
+                    },
+                    activeTrackColor: Colors.lightGreenAccent,
+                    activeColor: Colors.green,
+                  ),
+                  SizedBox(height:5.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      npl,
+                      btnSubmit
+                    ],
+                  )
+                ],
+              )
             )
-            // Expanded(
-            //   child: SizedBox(
-            //   height: 150.0, 
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.end,
-            //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //     children: [
-            //       Switch(
-            //         value: _enableBid, 
-            //         onChanged: (value) {
-            //           setState(() {
-            //             _enableBid = value;
-            //           });
-            //         },
-            //         activeTrackColor: Colors.lightGreenAccent,
-            //         activeColor: Colors.green,
-            //       ),
-            //       Row(
-            //           // crossAxisAlignment: CrossAxisAlignment.start,
-            //           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //         children: [
-            //           npl,
-            //           btnSubmit
-            //         ]
-            //       ),
-                  
-            //     ],
-            //   )
-            //   )
-            // ),
-          ]
-        )
-      )
+          ),
+        ],
+      ),
     );
-  }
+  }  
 }

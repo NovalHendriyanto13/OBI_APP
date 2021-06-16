@@ -31,5 +31,31 @@ class NplRepo {
       throw Exception('Connect to Api Failed');
     }
   }
+
+  Future<M_Npl> activeNpl(params) async{
+    
+    Session _session = new Session();
+    String token = await _session.getString('token');
+
+    final data = jsonEncode(params);
+
+    Map<String, String> header = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    };
+
+    final response = await http.post(
+      Uri.http(apiUrl, 'active-npl'),
+      headers: header,
+      body: data
+    );
+
+    if (response.statusCode==200) {
+      return M_Npl.fromJson(jsonDecode(response.body));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
    
 }
