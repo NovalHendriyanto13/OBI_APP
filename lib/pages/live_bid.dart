@@ -144,8 +144,6 @@ class _LiveBidState extends State<LiveBid>{
             "no_lot": param['NoLot'],
           };
 
-          print(data);
-
           _bidRepo.submit(data).then((value) {
             print(value.toString());
           });

@@ -30,6 +30,8 @@ class _ProfileState extends State<Profile> {
   TextEditingController _branch;
   TextEditingController _noRek;
   TextEditingController _anRek;
+  TextEditingController _pob;
+  TextEditingController _dob;
   
   @override
   void initState() {
@@ -66,6 +68,8 @@ class _ProfileState extends State<Profile> {
               _noRek = TextEditingController()..text= data['NoRek'];
               _branch = TextEditingController()..text= data['Cabang'];
               _anRek = TextEditingController()..text= data['AtasNama'];
+              _pob = TextEditingController()..text= data['TempatLahir'];
+              _dob = TextEditingController()..text= data['TglLahir'];
 
               final name = TextFormField(
                 controller: _name,
@@ -177,6 +181,47 @@ class _ProfileState extends State<Profile> {
                 ),
               );
 
+              final dob = TextFormField(
+                controller: _dob,
+                enabled: false,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  hintText: 'Tempat Lahir',
+                  contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
+                ),
+              );
+
+              final pob = TextFormField(
+                controller: _pob,
+                enabled: false,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  hintText: 'Tempat Lahir',
+                  contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
+                ),
+              );
+
+              final button = TextButton(
+                child: Text('Permintaan Ubah Data', 
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold
+                  )
+                ),
+                style: ButtonStyle(
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                      side: BorderSide(color:Colors.blue)
+                    )
+                  ),
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                ),
+                onPressed: () {}
+              );
+
               return ListView(
                 shrinkWrap: true,
                 padding: EdgeInsets.only(left: 24.0, right: 24.0),
@@ -189,6 +234,14 @@ class _ProfileState extends State<Profile> {
                   Text('Email', style: TextStyle(fontSize: 12.0)),
                   SizedBox(height: 5.0),
                   email,
+                  SizedBox(height: 8.0),
+                  Text('Tempat Lahir', style: TextStyle(fontSize: 12.0)),
+                  SizedBox(height: 5.0),
+                  pob,
+                  SizedBox(height: 8.0),
+                  Text('Tanggal Lahir', style: TextStyle(fontSize: 12.0)),
+                  SizedBox(height: 5.0),
+                  dob,
                   SizedBox(height: 8.0),
                   Text('Hp No', style: TextStyle(fontSize: 12.0)),
                   SizedBox(height: 5.0),
@@ -221,7 +274,8 @@ class _ProfileState extends State<Profile> {
                   Text('Atas Nama Rekening', style: TextStyle(fontSize: 12.0)),
                   SizedBox(height: 5.0),
                   anRek,
-                  SizedBox(height: 8.0)
+                  SizedBox(height: 8.0),
+                  button
                 ]
               );
             }

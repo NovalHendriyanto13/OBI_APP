@@ -131,5 +131,40 @@ class UserRepo {
       throw Exception('Connect to Api Failed');
     }
   }
+
+  Future<M_User> register(params, ktpFile, npwpFile) async{
+    final request = await http.MultipartRequest('POST', Uri.http(apiUrl, 'register'));
+    request.fields.addAll({
+      'name': params['name'],
+      'email': params['email'],
+      'phone_no': params['phone_no'],
+      'identity_no': params['identity_no'],
+      'address': params['address'],
+      'npwp_no': params['npwp_no'],
+      'bank': params['bank'],
+      'branch_bank': params['branch_bank'],
+      'account_no': params['account_no'],
+      'account_name': params['account_name'],
+      'birth_date': params['birth_date'],
+      'birth_place': params['birth_place']
+    });
+
+    if (ktpFile != null) {
+      request.files.add(await http.MultipartFile.fromPath('ktp_file', ktpFile.path.toString()));
+    }
+    if (npwpFile != null) {
+      request.files.add(await http.MultipartFile.fromPath('npwp_file', npwpFile.path.toString()));
+    }
+
+    final response = await request.send();
+    final res = await response.stream.bytesToString();
+print(res);
+    if (response.statusCode==200) {
+      return M_User.fromJson(jsonDecode(res));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
   
 }

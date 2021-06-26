@@ -38,4 +38,8 @@ class M_Npl {
     return this._body;
   }
 
+  String getStringData() {
+    return this._body;
+  }
+
 }

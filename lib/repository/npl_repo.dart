@@ -57,5 +57,39 @@ class NplRepo {
       throw Exception('Connect to Api Failed');
     }
   }
+
+  Future<M_Npl> create(params, fileTransfer) async{
+    
+    Session _session = new Session();
+    String token = await _session.getString('token');
+    Map<String, String> header = {
+      "Authorization": "Bearer " + token
+    };
+
+    final request = await http.MultipartRequest('POST', Uri.http(apiUrl, 'npl/create'));
+    request.fields.addAll({
+      'auction_id': params['auction_id'],
+      'type': params['type'],
+      'an': params['an'],
+      'deposit': params['deposit'],
+      'qty': params['qty'],
+      'nominal': params['nominal'],
+      'norek': params['norek']
+    });
+    request.headers.addAll(header);
+
+    if (fileTransfer != null) {
+      request.files.add(await http.MultipartFile.fromPath('attach', fileTransfer.path.toString()));
+    }
+
+    final response = await request.send();
+    final res = await response.stream.bytesToString();
+    if (response.statusCode==200) {
+      return M_Npl.fromJson(jsonDecode(res));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
    
 }

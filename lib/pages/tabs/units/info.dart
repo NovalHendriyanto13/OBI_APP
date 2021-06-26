@@ -61,6 +61,8 @@ class Info extends StatelessWidget {
         SizedBox(height: 8.0),
         Text(this.data['Merk'] + ' ' + this.data['Tipe'] + ' ' + this.data['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
         SizedBox(height: 8.0),
+        Text(this.data['NoPolisi']),
+        SizedBox(height: 8.0),
         Row(
           children: [
             Text('Eks : ' + this.data['GradeExterior']),

@@ -20,9 +20,8 @@ class Bid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController _npl = TextEditingController();
     TextEditingController _bid = TextEditingController();
-
+print(this.data);
     final carouselSlider = FutureBuilder<M_Unit>(
       future: this.detail,
       builder: (context, snapshot) {
@@ -85,7 +84,14 @@ class Bid extends StatelessWidget {
             hint: Text('Pilih NPL'),
             onChanged: (selected) {
                 this._selectedNpl = selected;
-            });
+            },
+            decoration: InputDecoration(
+              hintText: 'Pilih NPL',
+              labelText: 'Pilih NPL',
+              contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
+            )
+          );
         }
         else if (snapshot.hasError) {
           return Text(snapshot.error.toString());
@@ -212,7 +218,7 @@ class Bid extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(10.0),
       children: [
-        // carouselSlider,
+        carouselSlider,
         Text('Harga Dasar : ' + this.data['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
         SizedBox(height: 15.0),
         bidPage()

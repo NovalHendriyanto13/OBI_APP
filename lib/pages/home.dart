@@ -37,7 +37,7 @@ class _HomeState extends State<Home> {
   String _selectedType = "";
   final _dataPrice = {
      "":"Semua Harga" ,
-     "<50000000": "< 50.000.000" ,
+     "0-50000000": "< 50.000.000" ,
      "50000001-100000000": "50.000.001 - 100.000.000" ,
      "100000001-150000000": "100.000.001 - 150.000.000" ,
      ">150000000": "> 150.000.000" 
@@ -79,7 +79,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Home.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Home.tag);
-    SearchBar _searchBar = SearchBar(context, true, true);
+    SearchBar _searchBar = SearchBar(context, false, false);
 
     Widget _locations = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -111,63 +111,57 @@ class _HomeState extends State<Home> {
       ],
     );
 
-    Widget _schedule = Expanded(
-      child: SizedBox(
-        height: 300.0,
-        child: FutureBuilder<M_Auction>(
-          future: _dataAuction,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              List<dynamic> _data = snapshot.data.getListData();
-              if (_data == null || _data.length <= 0) {
-                _refreshToken.run();
-              }
-              return GridView.builder(
-                // scrollDirection: Axis.horizontal,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 2.0,
-                  mainAxisSpacing: 2.0,
-                ), 
-                itemBuilder: (BuildContext context, int index) {
-                  return Card(
-                    child: Container(
-                      padding: EdgeInsets.all(10.0),
-                      // color: Colors.white,
-                      child: GestureDetector(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Image.asset('assets/images/auction_img.png'),
-                            Text(_data[index]['Kota'], 
-                              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.red.shade400)),
-                            // SizedBox(height: 10.0),
-                            Text(_data[index]['TglAuctions'])
-                          ],
-                        ),
-                        onTap: () {
-                          if (_data[index]['Kota'] != '') {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: _data[index])));
-                          }
-                        },
-                      ), 
-                    )
+    Widget _schedule = SizedBox(
+      height: 300.0,
+      child: FutureBuilder<M_Auction>(
+            future: _dataAuction,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                List<dynamic> _data = snapshot.data.getListData();
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 2.0,
+                    mainAxisSpacing: 2.0,
+                  ), 
+                  itemBuilder: (BuildContext context, int index) {
+                    return Card(
+                      child: Container(
+                        padding: EdgeInsets.all(10.0),
+                        // color: Colors.white,
+                        child: GestureDetector(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Image.asset('assets/images/auction_img.png'),
+                              Text(_data[index]['Kota'], 
+                                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.red.shade400)),
+                              // SizedBox(height: 10.0),
+                              Text(_data[index]['TglAuctions'])
+                            ],
+                          ),
+                          onTap: () {
+                            if (_data[index]['Kota'] != '') {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: _data[index])));
+                            }
+                          },
+                        ), 
+                      )
 
-                  );
-                },
-                itemCount: _data.length,
-                
-              );
-            }
-            else if (snapshot.hasError) {
-              return Text(snapshot.error.toString());
-            }
-            return Center(child: Text('No Data Found'));
-          },
-        ) 
-      )
-    );
+                    );
+                  },
+                  itemCount: _data.length,
+                  
+                );
+              }
+              else if (snapshot.hasError) {
+                return Text(snapshot.error.toString());
+              }
+              return Center(child: Text('No Data Found'));
+            },
+          ) 
+      );
     
 
     final merk = DropdownButtonFormField(
@@ -260,18 +254,28 @@ class _HomeState extends State<Home> {
       height: 40.0,
       minWidth: double.infinity,
       onPressed: () {
-        List params = [];
+        Map params = {
+          "brand": "",
+          "year": "",
+          "type": "",
+          "color": "",
+          "transmission": "",
+          "start_year": "",
+          "end_year": "",
+          "start_price": "",
+          "end_price": ""
+        };
 
         if (_selectedBrand != '') {
-          params.add({"Merk": _selectedBrand});
+          params["brand"] =  _selectedBrand;
         }
 
         if (_selectedYear != 0) {
-          params.add({"Tahun": _selectedYear});
+          params["year"]= _selectedYear;
         }
 
         if (_selectedPrice != "") {
-          params.add({"Harga": _selectedPrice});
+          params["price"]= _selectedPrice;
         }
         Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionUnit(), settings: RouteSettings(arguments: params)));
       }

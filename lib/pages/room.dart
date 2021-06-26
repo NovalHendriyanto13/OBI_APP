@@ -48,6 +48,9 @@ class _RoomState extends State<Room> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List _now = snapshot.data.getListData();
+            if (_now == null) {
+              return Center(child: Text('Could not connect API'));
+            }
             if (_now[0]['now'].length <= 0) {
               return Center(child: Text('No Data Found'));
             }
@@ -86,6 +89,9 @@ class _RoomState extends State<Room> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List _next = snapshot.data.getListData();
+            if (_next == null) {
+              return Center(child: Text('Could not connect API'));
+            }
             if (_next[0]['next'].length <= 0) {
               return Center(child: Text('No Data Found'));
             }

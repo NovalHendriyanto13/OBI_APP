@@ -64,7 +64,7 @@ class _LoginState extends State<Login> {
     final username = TextFormField(
       controller: _username,
       keyboardType: TextInputType.text,
-      autofocus: true,
+      autofocus: false,
       decoration: InputDecoration(
         hintText: 'Username',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
