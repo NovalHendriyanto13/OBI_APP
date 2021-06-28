@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
@@ -6,6 +7,7 @@ import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/pages/live_bid.dart';
 import 'package:obi_mobile/repository/bid_repo.dart';
 import 'package:obi_mobile/repository/npl_repo.dart';
+import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 
 class Bid extends StatelessWidget {
   final Map data;
@@ -18,10 +20,18 @@ class Bid extends StatelessWidget {
 
   Bid({this.data, this.detail});
 
+
   @override
   Widget build(BuildContext context) {
     TextEditingController _bid = TextEditingController();
-print(this.data);
+    final _now = DateTime.now();
+    final _nowDt = DateFormat('yyyy-MM-dd hh:mm').format(_now);
+    String _auctionDateTime = this.data['TglAuctions'] + ' ' + this.data['EndTime'];
+    final _d1 = DateTime.parse(_nowDt);
+    final _auctionDate = DateTime.parse(_auctionDateTime);
+
+    final diff = _auctionDate.difference(_d1).inSeconds;
+    
     final carouselSlider = FutureBuilder<M_Unit>(
       future: this.detail,
       builder: (context, snapshot) {
@@ -65,7 +75,7 @@ print(this.data);
 
     final params = {
       "auction_id": this.data['IdAuctions'],
-      "type": "mobil",
+      "type": this.data['Jenis'],
     };
     
     final npl = FutureBuilder<M_Npl>(
@@ -136,7 +146,7 @@ print(this.data);
               "npl": this._selectedNpl,
               "auction_id": this.data['IdAuctions'],
               "unit_id": this.data['IdUnit'],
-              "type": "mobil",
+              "type": this.data['Jenis'],
               "no_lot": this.data['NoLot'],
               "bid_price" : bidPrice
             };
@@ -145,14 +155,13 @@ print(this.data);
               bool status = value.getStatus();
               if (status == true) {
                 final msgSuccess = "Unit ini berhasil anda bid";
-                Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
+                Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
               }
               else {
                 Map errMessage = value.getMessage();
                 String msg = errMessage['message'];
-                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
+                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
               }
-              print(value.toString());
             });
           },
           child: buttonText(),
@@ -174,17 +183,48 @@ print(this.data);
       ),
     );
 
+    join() {
+      return TextButton(
+        child: Text(
+          'Ikut Live Auction Sekarang', 
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold
+          )
+        ),
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18.0),
+              side: BorderSide(color:Colors.blue)
+            )
+          ),
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+        ),
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(), settings: RouteSettings(arguments: this.data)));
+        },
+      );
+    }
+
+    int endTime = DateTime.now().millisecondsSinceEpoch + 1000 * diff;
+
     Widget bidPage() {
       if (this.data['Online'].toString().trim() == 'floor') {
         return Center(
-          child: TextButton(
-            child: Text(
-              'Ikut Live Auction Sekarang',
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 24.0),
-            ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(), settings: RouteSettings(arguments: this.data)));
-            },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children:[
+              Text('Lelang Akan dimulai pada',
+                style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 24.0),
+              ),
+              CountdownTimer(
+                endTime: endTime,
+                textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+              ),
+              join(),           
+            ],
           )
         );
       }
@@ -195,7 +235,7 @@ print(this.data);
               subtitle: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text('Closed In : 00 00 00'),
+                  CountdownTimer(endTime: endTime),
                   SizedBox(height: 10.0),
                   npl,
                   SizedBox(height: 10.0),

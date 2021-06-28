@@ -132,6 +132,29 @@ class UserRepo {
     }
   }
 
+  Future<M_User> reqUpdate(email) async{
+
+    final data = jsonEncode({
+      "email": email
+    });
+    Map<String, String> header = {
+      "Content-Type": "application/json"
+    };
+
+    final response = await http.post(
+      Uri.http(apiUrl, 'req-update'),
+      headers: header,
+      body: data
+    );
+
+    if (response.statusCode==200) {
+      return M_User.fromJson(jsonDecode(response.body));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
+
   Future<M_User> register(params, ktpFile, npwpFile) async{
     final request = await http.MultipartRequest('POST', Uri.http(apiUrl, 'register'));
     request.fields.addAll({
@@ -158,7 +181,6 @@ class UserRepo {
 
     final response = await request.send();
     final res = await response.stream.bytesToString();
-print(res);
     if (response.statusCode==200) {
       return M_User.fromJson(jsonDecode(res));
     }

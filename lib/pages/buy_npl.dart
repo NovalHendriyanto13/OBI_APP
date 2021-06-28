@@ -136,6 +136,9 @@ class _BuyNplState extends State<BuyNpl> {
       onChanged: (value) {
         setState(() {
           _selectedType = value;
+          if (value == 'Motor') {
+            _nplAmount = 1000000;
+          }
         });
       },
       decoration: InputDecoration(
@@ -198,10 +201,11 @@ class _BuyNplState extends State<BuyNpl> {
           );
           if (fileResult != null) {
             File file = File(fileResult.files.single.path);
+            PlatformFile fileInfo = fileResult.files.first;
             setState(() {
               _transImage = file;      
             });
-            _uploadTrans..text = file.toString();
+            _uploadTrans..text = fileInfo.name.toString();
           }
       },
     );

@@ -48,9 +48,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _checkInternet.check(context);
-    
     _refreshToken.run();
-
     _dataAuction = _auctionRepo.list();
     _loadData();
   }
@@ -74,13 +72,13 @@ class _HomeState extends State<Home> {
     });
     _dataYear.add(0);
   }
-  
+
   @override
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, Home.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Home.tag);
     SearchBar _searchBar = SearchBar(context, false, false);
-
+  
     Widget _locations = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,

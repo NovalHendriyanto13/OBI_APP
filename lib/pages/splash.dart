@@ -75,33 +75,30 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            Expanded(
-              flex: 7,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ScaleTransition(
-                    scale: _animation,
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: CircleAvatar(
-                        backgroundColor: Colors.transparent,
-                        radius: 48.0,
-                        child: Image.asset('assets/images/logo.png'),
-                      ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                ScaleTransition(
+                  scale: _animation,
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: CircleAvatar(
+                      backgroundColor: Colors.transparent,
+                      radius: 48.0,
+                      child: Image.asset('assets/images/logo.png'),
                     ),
                   ),
-                  Text(_title, style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10.0)
-                  ),
-                  SizedBox(height: 20.0),
-                  SizedBox(
-                    width: 100.0,
-                    child: LinearProgressIndicator(),
-                  ),
-                ],
-              ),
+                ),
+                Text(_title, style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0)
+                ),
+                SizedBox(height: 20.0),
+                SizedBox(
+                  width: 100.0,
+                  child: LinearProgressIndicator(),
+                ),
+              ],
             ),
             Container(
               child: Padding(

@@ -343,7 +343,16 @@ class _RegState extends State<Reg> {
           };
 
           userRepo.register(params, _ktpImage, _npwpImage).then((value) {
-            print(value);
+            bool status = value.getStatus();
+            if (status == true) {
+              Map data = value.getData();
+              Toast.show("Registrasi Berhasil", context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM);
+            }
+            else {
+              String errMessage = value.getStringMessage();
+              Toast.show(errMessage, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+            }
+
             setState(() {
               _regProcessState = 0;
             });

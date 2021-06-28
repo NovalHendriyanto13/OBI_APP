@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:toast/toast.dart';
 import 'package:obi_mobile/models/m_user.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
@@ -57,6 +58,8 @@ class _ProfileState extends State<Profile> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               var data = snapshot.data.getSingleData();
+
+              print(data);
 
               _name = TextEditingController()..text= data['Nama'];
               _email = TextEditingController()..text= data['Email'];
@@ -219,8 +222,25 @@ class _ProfileState extends State<Profile> {
                   ),
                   backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
                 ),
-                onPressed: () {}
+                onPressed: () {
+                  String uEmail = data['Email'].toString();
+                  
+                  _userRepo.reqUpdate(uEmail).then((value) {
+                    bool status = value.getStatus();
+                    if (status == true) {
+                      Toast.show('Permintaan Ubah profile berhasil di kirim', context, duration: Toast.LENGTH_LONG , gravity: Toast.TOP);
+                    }
+                    else {
+                      Map errMessage = value.getMessage();
+                      String msg = errMessage['message'];
+                      Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
+                    }
+                  });
+                }
               );
+
+              final imageKtp = data['FKTP'] != '' ? Image.network(data['image_ktp']) : Text('');
+              final imageNpwp = data['FNPWP'] != '' ? Image.network(data['image_npwp']) : Text('');
 
               return ListView(
                 shrinkWrap: true,
@@ -274,6 +294,14 @@ class _ProfileState extends State<Profile> {
                   Text('Atas Nama Rekening', style: TextStyle(fontSize: 12.0)),
                   SizedBox(height: 5.0),
                   anRek,
+                  SizedBox(height: 8.0),
+                  Text('KTP', style: TextStyle(fontSize: 12.0)),
+                  SizedBox(height: 5.0),
+                  imageKtp,
+                  SizedBox(height: 8.0),
+                  Text('NPWP', style: TextStyle(fontSize: 12.0)),
+                  SizedBox(height: 5.0),
+                  imageNpwp,
                   SizedBox(height: 8.0),
                   button
                 ]

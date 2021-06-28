@@ -205,11 +205,11 @@ class _AuctionUnitState extends State<AuctionUnit> {
                             child: Align(alignment: Alignment.centerLeft, child: Text('DETAIL', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade300)))
                           )
                         ])
-
                       ]
                     ),
                   ),
                   onTap: () {
+                    _list[index]["TglAuctions"] = _list[index]['r_TglAuctions'];
                     Navigator.push(context, MaterialPageRoute(builder: (context) => Unit(), settings: RouteSettings(arguments: _list[index])));
                   },
               );
@@ -436,21 +436,19 @@ class _AuctionUnitState extends State<AuctionUnit> {
                 ),
               ),
             ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  merk,
-                  color,
-                  type,
-                  transmission,
-                  startYear,
-                  endYear,
-                  startPrice,
-                  endPrice,
-                  button
-                ])
-            )
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                merk,
+                color,
+                type,
+                transmission,
+                startYear,
+                endYear,
+                startPrice,
+                endPrice,
+                button
+              ])
           ])
       );
     }

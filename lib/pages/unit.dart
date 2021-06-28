@@ -19,6 +19,7 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
   DrawerMenu _drawerMenu = DrawerMenu();
   RefreshToken _refreshToken = RefreshToken();
   CheckInternet _checkInternet = CheckInternet();
+  // SocketIo _socket = SocketIo();
   UnitRepo _unitRepo = UnitRepo();
   TabController _tabController;
   Future<M_Unit> _dataUnit;
@@ -44,7 +45,7 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
     final Map param = ModalRoute.of(context).settings.arguments;
     final String id = param['IdUnit'];
     _dataUnit = _unitRepo.detail(id);
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,

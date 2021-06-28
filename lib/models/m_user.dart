@@ -30,6 +30,14 @@ class M_User {
     return this._msg;
   }
 
+  String getStringMessage() {
+    if (this._msg == null) {
+      return null;
+    }
+
+    return this._msg;
+  }
+
   Map<String, dynamic> getData() {
     return this._body;
   }

@@ -80,6 +80,7 @@ class _AuctionDetailState extends State<AuctionDetail> {
               return Center(child: Text('Could not connect to API'));
             }
             List _dataDetail = _data[0]['detail'];
+            final _dataHeader = _data[0];
             List _prevData = _data[0]['detail'];
             List _filteredList = [];
 
@@ -215,6 +216,9 @@ class _AuctionDetailState extends State<AuctionDetail> {
                     ),
                   ),
                   onTap: () {
+                    _list[index]["TglAuctions"] = _dataHeader['r_TglAuctions'];
+                    _list[index]["StartTime"] = _dataHeader['StartTime'];
+                    _list[index]["EndTime"] =  _dataHeader['EndTime'];
                     Navigator.push(context, MaterialPageRoute(builder: (context) => Unit(), settings: RouteSettings(arguments: _list[index])));
                   },
               );
@@ -442,21 +446,19 @@ class _AuctionDetailState extends State<AuctionDetail> {
                 ),
               ),
             ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  merk,
-                  color,
-                  type,
-                  transmission,
-                  startYear,
-                  endYear,
-                  startPrice,
-                  endPrice,
-                  button
-                ])
-            )
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                merk,
+                color,
+                type,
+                transmission,
+                startYear,
+                endYear,
+                startPrice,
+                endPrice,
+                button
+              ])
           ])
       );
     }
