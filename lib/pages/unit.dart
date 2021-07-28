@@ -19,16 +19,17 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
   DrawerMenu _drawerMenu = DrawerMenu();
   RefreshToken _refreshToken = RefreshToken();
   CheckInternet _checkInternet = CheckInternet();
-  // SocketIo _socket = SocketIo();
   UnitRepo _unitRepo = UnitRepo();
   TabController _tabController;
   Future<M_Unit> _dataUnit;
+  String _lastBid = '0';
 
   List<Widget> _tabList = <Widget>[
     Tab(child: Text('Info Unit')),
     Tab(child: Text('Dokumen')),
-    Tab(child: Text('Penawaran'))
+    Tab(child: Text('Lelang'))
   ];
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +46,13 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
     final Map param = ModalRoute.of(context).settings.arguments;
     final String id = param['IdUnit'];
     _dataUnit = _unitRepo.detail(id);
+
+    final paramLastBid = {
+      'auction_id': param['IdAuctions'],
+      'unit_id': param['IdUnit'] 
+    };
+
+    param['last_bid'] = _lastBid;
 
     return Scaffold(
       appBar: AppBar(

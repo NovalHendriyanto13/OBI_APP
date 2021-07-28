@@ -1,12 +1,14 @@
+import 'dart:io';
+import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/pages/terms_condition.dart';
+import 'package:obi_mobile/pages/login.dart';
 import 'package:obi_mobile/repository/user_repo.dart';
 import 'package:toast/toast.dart';
 import 'package:intl/intl.dart';
-import 'dart:io';
 
 class Reg extends StatefulWidget {
   static String tag = 'reg-page';
@@ -309,6 +311,8 @@ class _RegState extends State<Reg> {
           setState(() {
             _regProcessState = 1;
           });
+
+          final delay = 5;
           
           String uName = _name.text.toString();
           String uEmail = _email.text.toString();
@@ -347,6 +351,11 @@ class _RegState extends State<Reg> {
             if (status == true) {
               Map data = value.getData();
               Toast.show("Registrasi Berhasil", context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM);
+
+              Duration _duration = Duration(seconds: delay);
+              Timer _timer = Timer(_duration, () {
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context)=>Login()));
+              });
             }
             else {
               String errMessage = value.getStringMessage();

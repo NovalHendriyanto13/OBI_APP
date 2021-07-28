@@ -1,7 +1,9 @@
+import 'dart:io';
+import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:io';
+import 'package:obi_mobile/pages/npl.dart';
 import 'package:obi_mobile/pages/terms_condition.dart';
 import 'package:obi_mobile/repository/auction_repo.dart';
 import 'package:obi_mobile/repository/npl_repo.dart';
@@ -283,6 +285,9 @@ class _BuyNplState extends State<BuyNpl> {
           setState(() {
               _processState = 1;
             });
+          
+          final delay = 5;
+
           var param = {
             'auction_id': _selectedAuction.toString(),
             'type': _selectedType.toString(),
@@ -298,6 +303,11 @@ class _BuyNplState extends State<BuyNpl> {
             if (status == true) {
               String data = value.getStringData();
               Toast.show(data, context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM);
+
+              Duration _duration = Duration(seconds: delay);
+              Timer _timer = Timer(_duration, () {
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context)=>Npl()));
+              });
             }
             else {
               Map errMessage = value.getMessage();

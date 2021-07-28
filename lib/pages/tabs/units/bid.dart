@@ -2,12 +2,14 @@ import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
+import 'package:obi_mobile/libraries/socket_io.dart';
 import 'package:obi_mobile/models/m_npl.dart';
 import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/pages/live_bid.dart';
 import 'package:obi_mobile/repository/bid_repo.dart';
 import 'package:obi_mobile/repository/npl_repo.dart';
-import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 
 class Bid extends StatelessWidget {
   final Map data;
@@ -16,10 +18,24 @@ class Bid extends StatelessWidget {
   String _selectedNpl = '';
   BidRepo _bidRepo = BidRepo();
   NplRepo _nplRepo = NplRepo();
-  List _dataNpl = [];
+  SocketIo _socketIo = SocketIo();
+  IO.Socket _socket;
+  int _lastPrice = 0;
 
   Bid({this.data, this.detail});
 
+  _getLastPrice(param) {
+    final paramLastPrice = {
+      'auction_id': param['IdAuctions'],
+      'unit_id': param['IdUnit']
+    };
+    _socket = _socketIo.connect();
+    _socket.emit('setLastPrice', paramLastPrice);
+
+    _socket.on('getLastPrice', (resSocket) {
+      this._lastPrice = resSocket;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +47,8 @@ class Bid extends StatelessWidget {
     final _auctionDate = DateTime.parse(_auctionDateTime);
 
     final diff = _auctionDate.difference(_d1).inSeconds;
+
+    _getLastPrice(this.data);
     
     final carouselSlider = FutureBuilder<M_Unit>(
       future: this.detail,
@@ -141,6 +159,7 @@ class Bid extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 16.0),
       child: MaterialButton(
           onPressed: () {
+            FocusScope.of(context).unfocus();
             String bidPrice = _bid.text.toString();
             final data = {
               "npl": this._selectedNpl,
@@ -153,6 +172,7 @@ class Bid extends StatelessWidget {
 
             _bidRepo.submit(data).then((value) {
               bool status = value.getStatus();
+
               if (status == true) {
                 final msgSuccess = "Unit ini berhasil anda bid";
                 Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
@@ -229,6 +249,7 @@ class Bid extends StatelessWidget {
         );
       }
       else {
+        String _bidPrice = this._lastPrice == 0 ? this.data['HargaLimit'].toString() : this._lastPrice.toString();
         return Card(
             child: ListTile(
               title: Text('Auction #' + this.data['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold)),
@@ -236,6 +257,8 @@ class Bid extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   CountdownTimer(endTime: endTime),
+                  SizedBox(height: 10.0),
+                  Text('Harga Penawaran: Rp.' + _bidPrice),
                   SizedBox(height: 10.0),
                   npl,
                   SizedBox(height: 10.0),
@@ -259,7 +282,7 @@ class Bid extends StatelessWidget {
       padding: EdgeInsets.all(10.0),
       children: [
         carouselSlider,
-        Text('Harga Dasar : ' + this.data['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+        Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(this.data['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
         SizedBox(height: 15.0),
         bidPage()
       ],

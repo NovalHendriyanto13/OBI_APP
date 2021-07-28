@@ -151,7 +151,7 @@ class _LoginState extends State<Login> {
 
     final registerLabel = Padding(
       padding: EdgeInsets.symmetric(vertical: 16.0),
-      child:RichText(
+      child: RichText(
         textAlign: TextAlign.center,
         text: TextSpan(
           style: TextStyle(color: Colors.black),

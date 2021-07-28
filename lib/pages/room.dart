@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
@@ -6,6 +7,7 @@ import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/libraries/search_bar.dart';
 import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/pages/auction_detail.dart';
+import 'package:obi_mobile/pages/live_bid.dart';
 import 'package:obi_mobile/repository/auction_repo.dart';
 
 class Room extends StatefulWidget {
@@ -16,7 +18,7 @@ class Room extends StatefulWidget {
   _RoomState createState() => _RoomState();
 }
 
-class _RoomState extends State<Room> {
+class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
   DrawerMenu _drawerMenu = DrawerMenu();
   BottomMenu _bottomMenu = BottomMenu();
   RefreshToken _refreshToken = RefreshToken();
@@ -24,16 +26,50 @@ class _RoomState extends State<Room> {
   AuctionRepo _auctionRepo = AuctionRepo();
 
   Future<M_Auction> _dataList;
+  AnimationController _liveAnimation;
+  AnimationController _submitAnimation;
+
+  final delay = 1;
+  final _now = DateTime.now();
   
   @override
   void initState() {
     super.initState();
 
     _checkInternet.check(context);
-
     _refreshToken.run();
-
     _dataList = _auctionRepo.nowNext();
+    _liveAnimation = AnimationController(vsync: this, duration: Duration(seconds: delay));
+    _liveAnimation.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _liveAnimation.dispose();
+    _submitAnimation.dispose();
+    super.dispose();
+  }
+
+  Widget _blinkInfo(data) {
+    String textInfo = 'SUBMIT BID';
+    Color color = Colors.orange;
+    if (data['Online'].toString().toLowerCase() == 'floor') {
+      textInfo = 'LIVE BID';
+      color = Colors.green;
+    }
+    return FadeTransition(
+        opacity: _liveAnimation,
+        child: Material(child: Text(textInfo), color: color, textStyle: TextStyle(fontWeight: FontWeight.bold),),
+      );
+  }
+
+  void navigatorAuction(data) {
+    if (data['Online'].toString().toLowerCase() == 'floor') {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data)));
+    }
+    else {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data)));
+    }
   }
 
   @override
@@ -59,16 +95,24 @@ class _RoomState extends State<Room> {
                 itemCount: _now[0]['now'].length,
                 itemBuilder: (BuildContext context, int index) {
                   List data = _now[0]['now'];
+                  final dateNow = data[index]['TglAuctions'] + ' ' + data[index]['StartTime'];
                   return GestureDetector(
                     child: Card(
                       child: ListTile(
-                        title: Text((data[index]['Kota']).toString().toUpperCase()),
-                        subtitle: Text(data[index]['TglAuctions']),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children:[
+                            Text((data[index]['Kota']).toString().toUpperCase()),
+                            _blinkInfo(data[index])
+                          ]
+                        ),
+                        subtitle: Text(dateNow),
                         trailing: Icon(Icons.more_vert),
                       ),
                     ),
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data[index])));
+                      navigatorAuction(data[index]);
                     },
                   );
                 }
@@ -100,11 +144,19 @@ class _RoomState extends State<Room> {
                 itemCount: _next[0]['next'].length,
                 itemBuilder: (BuildContext context, int index) {
                   List data = _next[0]['next'];
+                  final dateNext = data[index]['TglAuctions'] + ' ' + data[index]['StartTime'];
                   return GestureDetector(
                     child: Card(
                       child: ListTile(
-                        title: Text(data[index]['Kota']),
-                        subtitle: Text(data[index]['TglAuctions']),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children:[
+                            Text((data[index]['Kota']).toString().toUpperCase()),
+                            _blinkInfo(data[index])
+                          ]
+                        ),
+                        subtitle: Text(dateNext),
                         trailing: Icon(Icons.more_vert),
                       ),
                     ),
@@ -119,7 +171,7 @@ class _RoomState extends State<Room> {
           else if (snapshot.hasError) {
             return Text(snapshot.error.toString());
           }
-          return Center(child: Text('No Data Displayed'));
+          return Center(child: Text('No Data Found'));
         }
       )
     );

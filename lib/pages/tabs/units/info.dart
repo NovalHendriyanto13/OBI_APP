@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:obi_mobile/models/m_unit.dart';
@@ -55,7 +56,7 @@ class Info extends StatelessWidget {
       padding: EdgeInsets.all(10.0),
       children: [
         carouselSlider,
-        Text('Harga Dasar : ' + this.data['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+        Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(this.data['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
         SizedBox(height: 15.0),
         Text('LOT : ' + this.data['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
         SizedBox(height: 8.0),

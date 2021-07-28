@@ -151,5 +151,30 @@ class AuctionRepo {
       throw Exception('Connect to Api Failed');
     }
   }
+
+  Future<M_Auction> liveUnit(id) async{
+
+    await _refreshToken.run();
+    
+    Session _session = new Session();
+    String token = await _session.getString('token');
+
+    Map<String, String> header = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    };
+
+    final response = await http.get(
+      Uri.http(apiUrl, 'live-auction-unit/' + id.toString()),
+      headers: header,
+    );
+
+    if (response.statusCode==200) {
+      return M_Auction.fromJson(jsonDecode(response.body));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
  
 }

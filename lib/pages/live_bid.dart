@@ -1,17 +1,21 @@
+import 'dart:async';
+import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:vibration/vibration.dart';
 import 'package:flutter/material.dart';
+import 'package:toast/toast.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
-import 'package:obi_mobile/libraries/socket_io.dart';
 import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/models/m_npl.dart';
 import 'package:obi_mobile/repository/unit_repo.dart';
 import 'package:obi_mobile/repository/bid_repo.dart';
 import 'package:obi_mobile/repository/npl_repo.dart';
-import 'package:toast/toast.dart';
+import 'package:obi_mobile/repository/auction_repo.dart';
+import 'package:obi_mobile/libraries/socket_io.dart';
 
 class LiveBid extends StatefulWidget {
   static String tag = 'live-bid-page';
@@ -24,16 +28,20 @@ class _LiveBidState extends State<LiveBid>{
   DrawerMenu _drawerMenu = DrawerMenu();
   RefreshToken _refreshToken = RefreshToken();
   CheckInternet _checkInternet = CheckInternet();
-  SocketIo _socketIo = SocketIo();
   UnitRepo _unitRepo = UnitRepo();
   BidRepo _bidRepo = BidRepo();
   NplRepo _nplRepo = NplRepo();
+  AuctionRepo _auctionRepo = AuctionRepo();
   Future<M_Unit> _dataUnit;
   int _process = 0;
   bool _enableBid = false;
   String _selectedNpl = '';
-  List _dataNpl;
   String _bidPrice = "0";
+  bool _isSocket = false;
+  String _panggilan = "0";
+  Timer timer;
+  Map _param;
+  SocketIo _socketIo = SocketIo();
   IO.Socket _socket;
 
   @override
@@ -41,13 +49,59 @@ class _LiveBidState extends State<LiveBid>{
     super.initState();
     _checkInternet.check(context);
     _refreshToken.run();
-    _socket = _socketIo.connect();
+    _socket = _socketIo.connect(); 
+    timer = Timer.periodic(Duration(seconds: 2), (timer) { updatePrice(); });
+  }
 
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  updatePrice() async{
+    if (_param != null) {
+      final paramLastBid = {
+        'auction_id': _param['IdAuctions'],
+        'unit_id': _param['IdUnit'] 
+      };
+      _socket.emit('setLastLive', paramLastBid);
+      _socket.on('getLastLive', (res) async {
+        if (res['is_new'] == 0) {
+          if (_bidPrice != res['price'].toString()) {
+            setState(() {
+              _bidPrice = res['price'].toString();
+            });
+            _vibrate();
+          }
+          if (_panggilan != res['panggilan'].toString()) {
+            setState(() {
+              _panggilan = res['panggilan'].toString();  
+            });
+            _vibrate();
+          }
+          if (_param['IdAuctions'] != res['unit']['IdAuctions']) {
+            setState(() {
+              _isSocket = true;
+              _param = res['unit'];
+            });
+            _vibrate();
+          }   
+        }
+        else if (res['is_new'] == 1) {
+           setState(() {
+            _isSocket = true;
+            _param = res['unit'];
+          });
+          _vibrate();
+        }
+      });
+    }
   }
 
   void _vibrate() async{
     if (await Vibration.hasVibrator()) {
-        Vibration.vibrate(duration: 1000);
+        Vibration.vibrate(duration: 500);
     }
   }
 
@@ -56,18 +110,14 @@ class _LiveBidState extends State<LiveBid>{
     Drawer _menu = _drawerMenu.initialize(context, LiveBid.tag);
 
     final Map param = ModalRoute.of(context).settings.arguments;
-    final String id = param['IdUnit'];
-    _dataUnit = _unitRepo.detail(id);
-
-    String _connectSocket() {
-      _socket.on('getBid', (data) {
-        setState(() {
-          this._bidPrice = data.toString();
-        });
-        _vibrate();
+    String id = param['IdUnit'];
+    
+    if (_isSocket == false) {
+      setState(() {
+        _param = param;
       });
-      return this._bidPrice;
     }
+    _dataUnit = _unitRepo.detail(id);
 
     final carouselSlider = FutureBuilder<M_Unit>(
       future: _dataUnit,
@@ -111,8 +161,8 @@ class _LiveBidState extends State<LiveBid>{
     );
 
     final params = {
-      "auction_id": param['IdAuctions'],
-      "type": param['Jenis'],
+      "auction_id": _param['IdAuctions'],
+      "type": _param['Jenis'],
     };
     final npl = FutureBuilder<M_Npl>(
       future: _nplRepo.activeNpl(params),
@@ -120,6 +170,7 @@ class _LiveBidState extends State<LiveBid>{
         if (snapshot.hasData) {
           List _data = snapshot.data.getListData();
           return  DropdownButtonFormField(
+            isExpanded: true,          
             items: _data.map((e) {
               String v = e["NPL"].toString();
               return DropdownMenuItem(
@@ -166,51 +217,52 @@ class _LiveBidState extends State<LiveBid>{
 
     final btnSubmit = Padding(
       padding: EdgeInsets.only(left: 3.0, right: 3.0),
-      child: MaterialButton(
-        onPressed: () {
-          if (this._enableBid == false) {
-            Toast.show('Status Anda Tidak Aktif', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
-          }
-          else if (this._selectedNpl == '') {
-            Toast.show('Anda Belom pilih NPL/ NPL tidak ada', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
-          }
-          else {
-            final data = {
-              "npl": this._selectedNpl,
-              "auction_id": param['IdAuctions'],
-              "unit_id": param['IdUnit'],
-              "type": param['Jenis'],
-              "no_lot": param['NoLot'],
-            };
+      child: ButtonTheme(
+        minWidth: 200.0,
+        child: MaterialButton(
+          onPressed: () {
+            if (this._enableBid == false) {
+              Toast.show('Status Anda Tidak Aktif', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+            }
+            else if (this._selectedNpl == '') {
+              Toast.show('Anda Belom pilih NPL/ NPL tidak ada', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+            }
+            else {
+              final data = {
+                "npl": this._selectedNpl,
+                "auction_id": _param['IdAuctions'],
+                "unit_id": _param['IdUnit'],
+                "type": _param['Jenis'],
+                "no_lot": _param['NoLot'],
+              };
 
-            _bidRepo.live(data).then((value) {
-              bool status = value.getStatus();
-              if (status == true) {
-                final msgSuccess = "Unit ini berhasil anda bid";
-                Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
-              }
-              else {
-                Map errMessage = value.getMessage();
-                String msg = errMessage['message'];
-                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
-              }
-            });
-          }
-        },
-        child: buttonText(),
-        color: Colors.blue,
-        // height: 48.0,
-      ),
+              _bidRepo.live(data).then((value) {
+                bool status = value.getStatus();
+                if (status == true) {
+                  final msgSuccess = "Unit ini berhasil anda bid";
+                  Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
+                }
+                else {
+                  Map errMessage = value.getMessage();
+                  String msg = errMessage['message'];
+                  Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+                }
+              });
+            }
+          },
+          child: buttonText(),
+          color: Colors.blue,
+        ),
+      )
     );
     
-    _connectSocket();
-
     String price() {
       if (_bidPrice == '0') {
-        return param['HargaLimit'].toString();
+        return (NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']));
       }
       else {
-        return _bidPrice;
+        int _bp = int.parse(_bidPrice);
+        return (NumberFormat.simpleCurrency(locale: 'id').format(_bp));
       }
     }
 
@@ -227,19 +279,19 @@ class _LiveBidState extends State<LiveBid>{
             padding: EdgeInsets.all(10.0),
             children: [
               carouselSlider,
-              Text('Harga Dasar : ' + price(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+              Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
               SizedBox(height: 15.0),
-              Text('LOT : ' + param['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
+              Text('LOT : ' + _param['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
               SizedBox(height: 8.0),
-              Text(param['Merk'] + ' ' + param['Tipe'] + ' ' + param['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(_param['Merk'] + ' ' + _param['Tipe'] + ' ' + _param['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 8.0),
               Row(
                 children: [
-                  Text('Eks : ' + param['GradeExterior']),
+                  Text('Eks : ' + _param['GradeExterior']),
                   Text(' | '),
-                  Text('Int : ' + param['GradeInterior']),
+                  Text('Int : ' + _param['GradeInterior']),
                   Text(' | '),
-                  Text('Msn :' + param['GradeMesin'])
+                  Text('Msn :' + _param['GradeMesin'])
                 ],
               ),
               SizedBox(height: 8.0),
@@ -249,9 +301,9 @@ class _LiveBidState extends State<LiveBid>{
               SizedBox(height: 8.0),
               Text('No Mesin : '),
               SizedBox(height: 8.0),
-              Text('STNK : ' + param['TglBerlakuSTNK'].toString()),
+              Text('STNK : ' + _param['TglBerlakuSTNK'].toString()),
               SizedBox(height: 8.0),
-              Text('Nota Pajak : ' + param['TglBerlakuPajak'].toString()),
+              Text('Nota Pajak : ' + _param['TglBerlakuPajak'].toString()),
               SizedBox(height: 8.0),
               Text('BPKB : '),
               SizedBox(height: 8.0),
@@ -259,25 +311,66 @@ class _LiveBidState extends State<LiveBid>{
               SizedBox(height: 8.0),
             ],
           ),
+          
           Container(
             color: Colors.grey,
-            height: 120.0,
             child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  SwitchListTile(
-                    title: const Text('Aktif Lelang'),
-                    value: _enableBid,
-                    onChanged: (value) {
-                      setState(() {
-                        _enableBid = value;
-                      });
-                    },
-                    activeTrackColor: Colors.lightGreenAccent,
-                    activeColor: Colors.green,
+                  Padding(
+                    padding: EdgeInsets.only(top: 5.0),
+                    child: RichText(
+                      textAlign: TextAlign.left,
+                      text: TextSpan(
+                        style: TextStyle(color: Colors.black),
+                        children: [
+                          TextSpan(text: ' Panggilan '),
+                          TextSpan(
+                            text: _panggilan,
+                            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
+                          )
+                        ] 
+                      )
+                    ),
                   ),
-                  SizedBox(height:5.0),
+                  Padding(
+                    padding: EdgeInsets.only(top: 5.0),
+                    child: RichText(
+                      textAlign: TextAlign.left,
+                      text: TextSpan(
+                        style: TextStyle(color: Colors.black),
+                        children: [
+                          TextSpan(text: 'Harga Penawaran '),
+                          TextSpan(
+                            text: price(),
+                            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
+                          ),
+                        ] 
+                      )
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 5.0, left: 5.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(child: Text('Aktif Lelang')),
+                        Expanded(
+                          child: SwitchListTile(
+                            title: const Text('On/Off'),
+                            value: _enableBid,
+                            onChanged: (value) {
+                              setState(() {
+                                _enableBid = value;
+                              });
+                            },
+                            activeTrackColor: Colors.lightGreenAccent,
+                            activeColor: Colors.green,
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     // crossAxisAlignment: CrossAxisAlignment.center,

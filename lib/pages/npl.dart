@@ -52,13 +52,7 @@ class _NplState extends State<Npl> {
               itemBuilder: (context, index) {
                 return Card(
                   child: ListTile(
-                    title: Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_data[index]['TglAuctions'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
-                        ],),
-                    ),
+                    title: Text(_data[index]['TglAuctions'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                     subtitle: Column(
                       children: [
                         SizedBox(height:8.0),

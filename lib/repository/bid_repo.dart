@@ -84,7 +84,7 @@ class BidRepo {
     }
   }
 
-  Future<M_Bid> lasPrice(params) async {
+  Future<M_Bid> lastBid(params) async {
 
     Session _session = new Session();
     String token = await _session.getString('token');

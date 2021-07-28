@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/search_bar.dart';
@@ -111,11 +112,11 @@ class _AuctionDetailState extends State<AuctionDetail> {
                 _dataDetail = _filteredList;
               }
               if (_searchText['start_price'] != '') {
-                _filteredList = _dataDetail.where((element) => int.parse(element["HargaLimit"]) >= _searchText['start_price']).toList();
+                _filteredList = _dataDetail.where((element) => element["HargaLimit"] >= int.parse(_searchText['start_price'])).toList();
                 _dataDetail = _filteredList;
               }
               if (_searchText['end_price'] != '') {
-                _filteredList = _dataDetail.where((element) => int.parse(element["HargaLimit"]) <= _searchText['end_price']).toList();
+                _filteredList = _dataDetail.where((element) => element["HargaLimit"] <= int.parse(_searchText['end_price'])).toList();
                 _dataDetail = _filteredList;
               }
             }
@@ -205,11 +206,11 @@ class _AuctionDetailState extends State<AuctionDetail> {
                           children: [
                           Padding(
                             padding: EdgeInsets.only(left: 12.0, bottom: 10.0),
-                            child: Align(alignment: Alignment.centerLeft, child: Text('Rp. ' + _list[index]['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold)))
+                            child: Align(alignment: Alignment.centerLeft, child: Text(NumberFormat.simpleCurrency(locale: 'id').format(_list[index]['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold)))
                         ),
                           Padding(
                             padding: EdgeInsets.only(right: 12.0, bottom: 10.0),
-                            child: Align(alignment: Alignment.centerLeft, child: Text('DETAIL', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade300)))
+                            child: Align(alignment: Alignment.centerLeft, child: Text('DETAIL >>', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade300)))
                           )
                         ])
                       ]
@@ -318,7 +319,7 @@ class _AuctionDetailState extends State<AuctionDetail> {
 
     final startPrice = TextFormField(
       controller: _startPrice,
-        keyboardType: TextInputType.text,
+        keyboardType: TextInputType.number,
         decoration: InputDecoration(
           hintText: 'Min Price',
           labelText: 'Min Price',
@@ -329,7 +330,7 @@ class _AuctionDetailState extends State<AuctionDetail> {
 
     final endPrice =  TextFormField(
       controller: _endPrice,
-        keyboardType: TextInputType.text,
+        keyboardType: TextInputType.number,
         decoration: InputDecoration(
           hintText: 'Max Price',
           labelText: 'Max Price',
@@ -432,34 +433,45 @@ class _AuctionDetailState extends State<AuctionDetail> {
     Widget _popupSearchDialog(BuildContext context) {
       return new AlertDialog(
         title: const Text('Filter Unit'),
-        content: Stack(
-          children: <Widget>[
-            Positioned(
-              top: -40.0,
-              child: InkResponse(
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
-                child: CircleAvatar(
-                  child: Icon(Icons.close),
-                  backgroundColor: Colors.red,
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Stack(
+            children: <Widget>[
+              Positioned(
+                top: -40.0,
+                child: InkResponse(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: CircleAvatar(
+                    child: Icon(Icons.close),
+                    backgroundColor: Colors.red,
+                  ),
                 ),
               ),
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                merk,
-                color,
-                type,
-                transmission,
-                startYear,
-                endYear,
-                startPrice,
-                endPrice,
-                button
-              ])
-          ])
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  merk,
+                  SizedBox(height: 8.0,),
+                  color,
+                  SizedBox(height: 8.0,),
+                  type,
+                  SizedBox(height: 8.0,),
+                  transmission,
+                  SizedBox(height: 8.0,),
+                  startYear,
+                  SizedBox(height: 8.0,),
+                  endYear,
+                  SizedBox(height: 8.0,),
+                  startPrice,
+                  SizedBox(height: 8.0,),
+                  endPrice,
+                  SizedBox(height: 8.0,),
+                  button
+                ])
+            ])
+        )
       );
     }
 
