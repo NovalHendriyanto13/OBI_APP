@@ -27,9 +27,7 @@ class _BidState extends State<Bid> {
   @override
   void initState() {
     super.initState();
-
     _checkInternet.check(context);
-
     _refreshToken.run();
     _dataBid = _bidRepo.list();
   }
@@ -55,13 +53,11 @@ class _BidState extends State<Bid> {
               itemBuilder: (context, index) {
                 return Card(
                   child: ListTile(
-                    title: Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_data[index]['TglAuctions'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
-                        ],),
-                    ),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_data[index]['TglAuctions'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                      ]),
                     subtitle: Column(
                       children: [
                         SizedBox(height:8.0),
@@ -83,9 +79,7 @@ class _BidState extends State<Bid> {
         else if (snapshot.hasError) {
           return Text(snapshot.error.toString());
         }
-        return Center(
-          child: CircularProgressIndicator(),
-        );
+        return Center(child: Text('No Data Found'));
       },
     );
 

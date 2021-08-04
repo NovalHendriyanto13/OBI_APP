@@ -85,12 +85,24 @@ class AuctionRepo {
       );
     }
     else {
+      final defaultBody = jsonEncode({
+          "brand": "",
+          "type": "",
+          "color": "",
+          "year": "",
+          "start_year": "",
+          "end_year": "",
+          "transmission": "",
+          "start_price": "",
+          "end_price": ""
+      });
       response = await http.post(
         Uri.http(apiUrl, 'auction_detail'),
         headers: header,
+        body: defaultBody
       );
     }
-
+    
     if (response.statusCode==200) {
       return M_Auction.fromJson(jsonDecode(response.body));
     }

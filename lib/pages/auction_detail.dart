@@ -18,7 +18,7 @@ class AuctionDetail extends StatefulWidget {
   _AuctionDetailState createState() => _AuctionDetailState();
 }
 
-class _AuctionDetailState extends State<AuctionDetail> {
+class _AuctionDetailState extends State<AuctionDetail> with SingleTickerProviderStateMixin {
 
   DrawerMenu _drawerMenu = DrawerMenu();
   BottomMenu _bottomMenu = BottomMenu();
@@ -41,12 +41,40 @@ class _AuctionDetailState extends State<AuctionDetail> {
   TextEditingController _color = TextEditingController();
   TextEditingController _startPrice = TextEditingController();
   TextEditingController _endPrice = TextEditingController();
+
+  AnimationController _soldAnimation;
+  final delay = 1;
   
   @override
   void initState() {
     super.initState(); 
     _checkInternet.check(context);
     _loadData();
+    _soldAnimation = AnimationController(vsync: this, duration: Duration(seconds: delay));
+    _soldAnimation.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _soldAnimation.dispose();
+    super.dispose();
+  }
+
+  Widget _sold(data) {
+    if (data['Status'].toString() == '2') {
+      String textInfo = ' SOLD ';
+      Color color = Colors.green;
+      return FadeTransition(
+          opacity: _soldAnimation,
+          child: Padding(
+            padding: EdgeInsets.all(5.0),
+            child: Material(child: Text(textInfo), color: color, textStyle: TextStyle(fontWeight: FontWeight.bold))
+          )
+        );
+    }
+    else {
+      return Text('');
+    }
   }
 
   _loadData() async{
@@ -104,11 +132,17 @@ class _AuctionDetailState extends State<AuctionDetail> {
                 _dataDetail = _filteredList;
               }
               if (_searchText['start_year'] != 0) {
-                _filteredList = _dataDetail.where((element) => int.parse(element["Tahun"]) >= _searchText['start_year']).toList();
+                _filteredList = _dataDetail.where((element) {
+                  String startYear = element["Tahun"] == "" ? "0" : element["Tahun"];
+                  return int.parse(startYear) >= _searchText['start_year'];
+                }).toList();
                 _dataDetail = _filteredList;
               }
               if (_searchText['end_year'] != 0) {
-                _filteredList = _dataDetail.where((element) => int.parse(element["Tahun"]) <= _searchText['end_year']).toList();
+                _filteredList = _dataDetail.where((element) {
+                  String endYear = element["Tahun"] == "" ? "0" : element["Tahun"];
+                  return int.parse(endYear) >= _searchText['end_year'];
+                }).toList();
                 _dataDetail = _filteredList;
               }
               if (_searchText['start_price'] != '') {
@@ -167,7 +201,13 @@ class _AuctionDetailState extends State<AuctionDetail> {
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text('No Lot : ' + _list[index]['NoLot'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text('No Lot : ' + _list[index]['NoLot'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                                              _sold(_list[index]),
+                                          ]),
                                           Text((_list[index]['Merk'] + ' ' + _list[index]['Tipe'] + ' ' + _list[index]['Transmisi']).toString().toUpperCase(), style: TextStyle(fontWeight: FontWeight.bold)),
                                         ]
                                       ),
@@ -204,15 +244,16 @@ class _AuctionDetailState extends State<AuctionDetail> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                          Padding(
-                            padding: EdgeInsets.only(left: 12.0, bottom: 10.0),
-                            child: Align(alignment: Alignment.centerLeft, child: Text(NumberFormat.simpleCurrency(locale: 'id').format(_list[index]['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold)))
-                        ),
-                          Padding(
-                            padding: EdgeInsets.only(right: 12.0, bottom: 10.0),
-                            child: Align(alignment: Alignment.centerLeft, child: Text('DETAIL >>', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade300)))
-                          )
-                        ])
+                            Padding(
+                              padding: EdgeInsets.only(left: 12.0, bottom: 10.0),
+                              child: Align(alignment: Alignment.centerLeft, child: Text(NumberFormat.simpleCurrency(locale: 'id').format(_list[index]['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold)))
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(right: 12.0, bottom: 10.0),
+                              child: Align(alignment: Alignment.centerLeft, child: Text('DETAIL >>', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade300)))
+                            )
+                          ]
+                        )
                       ]
                     ),
                   ),
@@ -414,10 +455,6 @@ class _AuctionDetailState extends State<AuctionDetail> {
                 "end_price": _endPrice.text.toString()
               };
             });
-            // Navigator.pushReplacement(
-            //   context,
-            //   MaterialPageRoute(
-            //       builder: (BuildContext context) => super.widget, settings: RouteSettings(arguments: filters)));
           },
           child: Text('Tampilkan',
             style: TextStyle(
@@ -481,44 +518,29 @@ class _AuctionDetailState extends State<AuctionDetail> {
       }
     }
     Widget _popupSortDialog(BuildContext context) {
+      List<String> label = ['No Lot', 'Harga Terendah', 'Harga Tertinggi'];
+      List<String> value = ['nolot', 'minprice', 'maxprice'];
+      double height = label.length * 25.0;
       return new AlertDialog(
         title: const Text('Sort Unit'),
-        content: ListView(
-          children: ListTile.divideTiles(
-            context: context,
-            tiles: [
-              ListTile(
-                title: Text('Nomor Lot'),
-                trailing: trailing('nolot'),
+        content: Container(
+          height: 250.0,
+          width: height,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: label.length,
+            itemBuilder: (BuildContext context, int index){
+              return ListTile(
+                title: Text(label[index]),
+                trailing: trailing(value[index]),
                 onTap: () {
                   setState(() {
-                    _selectedSort = 'nolot';
+                    _selectedSort = value[index];
                   });
                   Navigator.of(context).pop();
                 },
-              ),
-              ListTile(
-                title: Text('Harga Terendah'),
-                trailing: trailing('minprice'),
-                onTap: () {
-                  setState(() {
-                    _selectedSort = 'minprice';
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                title: Text('Harga Tertinggi'),
-                trailing: trailing('maxprice'),
-                onTap: () {
-                  setState(() {
-                    _selectedSort = 'maxprice';
-                  });
-                  Navigator.of(context).pop();
-                },
-              )
-            ]
-          ).toList()
+              );
+            })
         )
       );
     }

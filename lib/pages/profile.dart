@@ -59,8 +59,6 @@ class _ProfileState extends State<Profile> {
             if (snapshot.hasData) {
               var data = snapshot.data.getSingleData();
 
-              print(data);
-
               _name = TextEditingController()..text= data['Nama'];
               _email = TextEditingController()..text= data['Email'];
               _mobile = TextEditingController()..text= data['NoTelp'];

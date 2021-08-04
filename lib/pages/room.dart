@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:toast/toast.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
-import 'package:obi_mobile/libraries/search_bar.dart';
 import 'package:obi_mobile/models/m_auction.dart';
 import 'package:obi_mobile/pages/auction_detail.dart';
 import 'package:obi_mobile/pages/live_bid.dart';
@@ -27,10 +27,10 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
 
   Future<M_Auction> _dataList;
   AnimationController _liveAnimation;
-  AnimationController _submitAnimation;
 
-  final delay = 1;
   final _now = DateTime.now();
+  
+  final delay = 1;
   
   @override
   void initState() {
@@ -46,26 +46,48 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
   @override
   void dispose() {
     _liveAnimation.dispose();
-    _submitAnimation.dispose();
     super.dispose();
   }
 
   Widget _blinkInfo(data) {
-    String textInfo = 'SUBMIT BID';
+    String textInfo = ' SUBMIT BID ';
     Color color = Colors.orange;
     if (data['Online'].toString().toLowerCase() == 'floor') {
-      textInfo = 'LIVE BID';
+      textInfo = ' LIVE BID ';
       color = Colors.green;
     }
     return FadeTransition(
         opacity: _liveAnimation,
-        child: Material(child: Text(textInfo), color: color, textStyle: TextStyle(fontWeight: FontWeight.bold),),
+        child: Padding(
+          padding: EdgeInsets.all(5.0),
+          child: Material(child: Text(textInfo), color: color, textStyle: TextStyle(fontWeight: FontWeight.bold))
+        )
       );
   }
 
   void navigatorAuction(data) {
     if (data['Online'].toString().toLowerCase() == 'floor') {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data)));
+      bool expiredBid = true;
+      String _auctionDateTime = data['TglAuctions'] + ' ' + data['EndTime'];
+      String _auctionStartTime = data['TglAuctions'] + ' ' + data['StartTime'];
+      final _nowDt = DateFormat('yyyy-MM-dd HH:mm').format(_now);
+      final _d1 = DateTime.parse(_nowDt);
+      final _auctionEndDate = DateTime.parse(_auctionDateTime);
+      final _auctionStartDate = DateTime.parse(_auctionStartTime);
+      final diffEnd = _auctionEndDate.difference(_d1).inSeconds;
+      final diffStart = _auctionStartDate.difference(_d1).inSeconds;
+      
+      //open auction
+      if (diffStart <= 0 && diffEnd > 0) {
+        expiredBid = false;
+      }
+      if (expiredBid) {
+        String expireMsg = 'Auction Belum Di Buka';
+        Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+      }
+      else {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data)));
+      }
     }
     else {
       Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data)));
@@ -74,10 +96,9 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context) {
-    SearchBar _searchBar = new SearchBar(context, true, true);
     Drawer _menu = _drawerMenu.initialize(context, Room.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Room.tag);
-
+    
     final _listNow = Expanded(
       child: FutureBuilder<M_Auction>(
         future: _dataList,
@@ -180,7 +201,6 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
       appBar: AppBar(
         title: Text(Room.name),
         backgroundColor: Colors.red,
-        actions: _searchBar.build(),
       ),
       drawer: _menu,
       bottomNavigationBar: _bottomNav,

@@ -30,8 +30,6 @@ class _BuyNplState extends State<BuyNpl> {
   CheckInternet _checkInternet = CheckInternet();
 
   // controller
-  TextEditingController _auctions = TextEditingController();
-  TextEditingController _noRek = TextEditingController();
   TextEditingController _totalNpl = TextEditingController();
   TextEditingController _totalPayment = TextEditingController();
   TextEditingController _an = TextEditingController();
@@ -111,17 +109,6 @@ class _BuyNplState extends State<BuyNpl> {
       decoration: InputDecoration(
         hintText: 'Pilih Tanggal',
         labelText: 'Tanggal',
-        contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
-      ),
-    );
-
-    final noRek = TextFormField(
-      controller: _noRek,
-      keyboardType: TextInputType.text,
-      decoration: InputDecoration(
-        hintText: 'No Rekening Deposit',
-        labelText: 'No Rekening Deposit',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0))
       ),
@@ -294,15 +281,14 @@ class _BuyNplState extends State<BuyNpl> {
             'an': _an.text.toString(),
             'deposit': _totalPayment.text.toString(),
             'qty': _totalNpl.text.toString(),
-            'nominal': _nplAmount.toString(),
-            'norek': _noRek.text.toString()
+            'nominal': _nplAmount.toString()
           };
 
           _nplRepo.create(param, _transImage).then((value) {
             bool status = value.getStatus();
             if (status == true) {
               String data = value.getStringData();
-              Toast.show(data, context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM);
+              Toast.show(data, context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM, backgroundColor: Colors.green);
 
               Duration _duration = Duration(seconds: delay);
               Timer _timer = Timer(_duration, () {
@@ -343,8 +329,6 @@ class _BuyNplState extends State<BuyNpl> {
               totalNpl,
               SizedBox(height: 8.0),
               totalPayment,
-              SizedBox(height: 8.0),
-              noRek,
               SizedBox(height: 8.0),
               type,
               SizedBox(height: 8.0),

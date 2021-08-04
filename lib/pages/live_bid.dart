@@ -5,7 +5,6 @@ import 'package:vibration/vibration.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
@@ -39,6 +38,7 @@ class _LiveBidState extends State<LiveBid>{
   String _bidPrice = "0";
   bool _isSocket = false;
   String _panggilan = "0";
+  String id = "";
   Timer timer;
   Map _param;
   SocketIo _socketIo = SocketIo();
@@ -49,7 +49,8 @@ class _LiveBidState extends State<LiveBid>{
     super.initState();
     _checkInternet.check(context);
     _refreshToken.run();
-    _socket = _socketIo.connect(); 
+    _socket = _socketIo.connect();
+    initLiveBid();
     timer = Timer.periodic(Duration(seconds: 2), (timer) { updatePrice(); });
   }
 
@@ -57,6 +58,57 @@ class _LiveBidState extends State<LiveBid>{
   void dispose() {
     timer.cancel();
     super.dispose();
+  }
+
+  initLiveBid() async{
+    if (_param != null) {
+      final paramLastBid = {
+        'auction_id': _param['IdAuctions'],
+        'unit_id': _param['IdUnit'] 
+      };
+      _socket.emit('initLive', paramLastBid);
+      _socket.on('getLastLive', (res) async {
+        bool isVibrate = false;
+        if (res['is_new'] == 0) {
+          if (_bidPrice != res['price'].toString()) {
+            _bidPrice = res['price'].toString();
+            isVibrate = true;
+          }
+          if (_panggilan != res['panggilan'].toString()) {
+            _panggilan = res['panggilan'].toString();
+            id = res['IdUnit'];
+            isVibrate = true;
+          }
+          if (_param['IdAuctions'] != res['unit']['IdAuctions']) {
+            _isSocket = true;
+            _param = res['unit'];
+            id = res['IdUnit'];
+            isVibrate = true;
+          }
+          setState(() {
+            _isSocket = _isSocket;
+            _param = _param;
+            id = id;
+            _bidPrice = _bidPrice;
+            _panggilan = _panggilan;
+          });
+
+          if (isVibrate) {
+            _vibrate();
+          }
+        }
+        else if (res['is_new'] == 1) {
+           setState(() {
+            _isSocket = true;
+            _param = res['unit'];
+            _panggilan = "0";
+            _bidPrice = res['price'].toString();
+            id = res['IdUnit'];
+          });
+          _vibrate();
+        }
+      });
+    }
   }
 
   updatePrice() async{
@@ -67,31 +119,42 @@ class _LiveBidState extends State<LiveBid>{
       };
       _socket.emit('setLastLive', paramLastBid);
       _socket.on('getLastLive', (res) async {
+        bool isVibrate = false;
         if (res['is_new'] == 0) {
           if (_bidPrice != res['price'].toString()) {
-            setState(() {
-              _bidPrice = res['price'].toString();
-            });
-            _vibrate();
+            _bidPrice = res['price'].toString();
+            isVibrate = true;
           }
           if (_panggilan != res['panggilan'].toString()) {
-            setState(() {
-              _panggilan = res['panggilan'].toString();  
-            });
-            _vibrate();
+            _panggilan = res['panggilan'].toString();
+            id = res['IdUnit'];
+            isVibrate = true;
           }
           if (_param['IdAuctions'] != res['unit']['IdAuctions']) {
-            setState(() {
-              _isSocket = true;
-              _param = res['unit'];
-            });
+            _isSocket = true;
+            _param = res['unit'];
+            id = res['IdUnit'];
+            isVibrate = true;
+          }
+          setState(() {
+            _isSocket = _isSocket;
+            _param = _param;
+            id = id;
+            _bidPrice = _bidPrice;
+            _panggilan = _panggilan;
+          });
+
+          if (isVibrate) {
             _vibrate();
-          }   
+          }
         }
         else if (res['is_new'] == 1) {
            setState(() {
             _isSocket = true;
             _param = res['unit'];
+            _panggilan = "0";
+            _bidPrice = res['price'].toString();
+            id = res['IdUnit'];
           });
           _vibrate();
         }
@@ -110,11 +173,12 @@ class _LiveBidState extends State<LiveBid>{
     Drawer _menu = _drawerMenu.initialize(context, LiveBid.tag);
 
     final Map param = ModalRoute.of(context).settings.arguments;
-    String id = param['IdUnit'];
+    id = param['IdUnit'];
     
     if (_isSocket == false) {
       setState(() {
         _param = param;
+        id = _param['IdUnit'];
       });
     }
     _dataUnit = _unitRepo.detail(id);
@@ -258,11 +322,16 @@ class _LiveBidState extends State<LiveBid>{
     
     String price() {
       if (_bidPrice == '0') {
-        return (NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']));
+        print('ini');
+        print(_param);
+        return _param['HargaLimit'].toString();
+        // return (NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']));
       }
       else {
         int _bp = int.parse(_bidPrice);
-        return (NumberFormat.simpleCurrency(locale: 'id').format(_bp));
+        print('itu');
+        return _bidPrice;
+        // return (NumberFormat.simpleCurrency(locale: 'id').format(_bp));
       }
     }
 
@@ -279,7 +348,8 @@ class _LiveBidState extends State<LiveBid>{
             padding: EdgeInsets.all(10.0),
             children: [
               carouselSlider,
-              Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+              // Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+              Text('Harga Dasar : ' + _param['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
               SizedBox(height: 15.0),
               Text('LOT : ' + _param['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
               SizedBox(height: 8.0),

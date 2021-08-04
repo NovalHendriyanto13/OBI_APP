@@ -47,11 +47,6 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
     final String id = param['IdUnit'];
     _dataUnit = _unitRepo.detail(id);
 
-    final paramLastBid = {
-      'auction_id': param['IdAuctions'],
-      'unit_id': param['IdUnit'] 
-    };
-
     param['last_bid'] = _lastBid;
 
     return Scaffold(

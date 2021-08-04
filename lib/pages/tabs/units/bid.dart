@@ -2,9 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
-import 'package:obi_mobile/libraries/socket_io.dart';
 import 'package:obi_mobile/models/m_npl.dart';
 import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/pages/live_bid.dart';
@@ -18,38 +16,29 @@ class Bid extends StatelessWidget {
   String _selectedNpl = '';
   BidRepo _bidRepo = BidRepo();
   NplRepo _nplRepo = NplRepo();
-  SocketIo _socketIo = SocketIo();
-  IO.Socket _socket;
-  int _lastPrice = 0;
-
+  String _lastPrice = '0';
+  bool expiredBid = true;
+  List<String> _usedNpl = []; 
+  
   Bid({this.data, this.detail});
-
-  _getLastPrice(param) {
-    final paramLastPrice = {
-      'auction_id': param['IdAuctions'],
-      'unit_id': param['IdUnit']
-    };
-    _socket = _socketIo.connect();
-    _socket.emit('setLastPrice', paramLastPrice);
-
-    _socket.on('getLastPrice', (resSocket) {
-      this._lastPrice = resSocket;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     TextEditingController _bid = TextEditingController();
     final _now = DateTime.now();
-    final _nowDt = DateFormat('yyyy-MM-dd hh:mm').format(_now);
+    final _nowDt = DateFormat('yyyy-MM-dd HH:mm').format(_now);
     String _auctionDateTime = this.data['TglAuctions'] + ' ' + this.data['EndTime'];
+    String _auctionStartTime = this.data['TglAuctions'] + ' ' + this.data['StartTime'];
     final _d1 = DateTime.parse(_nowDt);
-    final _auctionDate = DateTime.parse(_auctionDateTime);
+    final _auctionEndDate = DateTime.parse(_auctionDateTime);
+    final _auctionStartDate = DateTime.parse(_auctionStartTime);
+    final diffEnd = _auctionEndDate.difference(_d1).inSeconds;
+    final diffStart = _auctionStartDate.difference(_d1).inSeconds;
+    //open auction
+    if (diffStart <= 0 && diffEnd > 0) {
+      this.expiredBid = false;
+    }
 
-    final diff = _auctionDate.difference(_d1).inSeconds;
-
-    _getLastPrice(this.data);
-    
     final carouselSlider = FutureBuilder<M_Unit>(
       future: this.detail,
       builder: (context, snapshot) {
@@ -96,7 +85,8 @@ class Bid extends StatelessWidget {
       "type": this.data['Jenis'],
     };
     
-    final npl = FutureBuilder<M_Npl>(
+
+    Widget npl = FutureBuilder<M_Npl>(
       future: _nplRepo.activeNpl(params),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
@@ -158,31 +148,49 @@ class Bid extends StatelessWidget {
     final btnSubmit = Padding(
       padding: EdgeInsets.symmetric(vertical: 16.0),
       child: MaterialButton(
-          onPressed: () {
-            FocusScope.of(context).unfocus();
-            String bidPrice = _bid.text.toString();
-            final data = {
-              "npl": this._selectedNpl,
-              "auction_id": this.data['IdAuctions'],
-              "unit_id": this.data['IdUnit'],
-              "type": this.data['Jenis'],
-              "no_lot": this.data['NoLot'],
-              "bid_price" : bidPrice
-            };
-
-            _bidRepo.submit(data).then((value) {
-              bool status = value.getStatus();
-
-              if (status == true) {
-                final msgSuccess = "Unit ini berhasil anda bid";
-                Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
+          onPressed: () async {
+            if (this.expiredBid) {
+              String expireMsg = 'Auction Sudah di tutup';
+              if (this.data['Status'].toString() == '1') {
+                expireMsg = 'Auction Sudah di tutup, Silakan Hubungi Customer Service Kami Untuk Info Unit ini';
+              }
+              else if (this.data['Status'].toString() == '2') {
+                expireMsg = 'Auction Sudah di tutup, Unit ini sudah terjual';
+              }
+              Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+            }
+            else {
+              FocusScope.of(context).unfocus();
+              if (_usedNpl.contains(this._selectedNpl)) {
+                String usedMsg = 'NPL sudah terpakai';
+                Toast.show(usedMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
               }
               else {
-                Map errMessage = value.getMessage();
-                String msg = errMessage['message'];
-                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+                String bidPrice = _bid.text.toString();
+                final data = {
+                  "npl": this._selectedNpl,
+                  "auction_id": this.data['IdAuctions'],
+                  "unit_id": this.data['IdUnit'],
+                  "type": this.data['Jenis'],
+                  "no_lot": this.data['NoLot'],
+                  "bid_price" : bidPrice
+                };
+
+                final biding = await _bidRepo.submit(data);
+                bool statusBid = biding.getStatus();
+                if (statusBid == true) {
+                  final msgSuccess = "Unit ini berhasil anda bid";
+                  _lastPrice = bidPrice.toString();
+                  _usedNpl.add(this._selectedNpl);
+                  Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
+                }
+                else {
+                  Map errMessage = biding.getMessage();
+                  String msg = errMessage['message'];
+                  Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+                }
               }
-            });
+            }
           },
           child: buttonText(),
           color: Colors.blue,
@@ -222,13 +230,21 @@ class Bid extends StatelessWidget {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
         ),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(), settings: RouteSettings(arguments: this.data)));
+          if (this.expiredBid) {
+            String expireMsg = 'Auction Belum Di Buka';
+            Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+          }
+          else {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(), settings: RouteSettings(arguments: this.data)));
+          }
         },
       );
     }
 
-    int endTime = DateTime.now().millisecondsSinceEpoch + 1000 * diff;
-
+    int endTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffEnd;
+    void onEnd() {
+      this.expiredBid = true;
+    }
     Widget bidPage() {
       if (this.data['Online'].toString().trim() == 'floor') {
         return Center(
@@ -241,6 +257,7 @@ class Bid extends StatelessWidget {
               ),
               CountdownTimer(
                 endTime: endTime,
+                onEnd: onEnd,
                 textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
               ),
               join(),           
@@ -249,7 +266,6 @@ class Bid extends StatelessWidget {
         );
       }
       else {
-        String _bidPrice = this._lastPrice == 0 ? this.data['HargaLimit'].toString() : this._lastPrice.toString();
         return Card(
             child: ListTile(
               title: Text('Auction #' + this.data['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold)),
@@ -258,7 +274,7 @@ class Bid extends StatelessWidget {
                 children: [
                   CountdownTimer(endTime: endTime),
                   SizedBox(height: 10.0),
-                  Text('Harga Penawaran: Rp.' + _bidPrice),
+                  Text('Harga Penawaran: Rp.' + _lastPrice),
                   SizedBox(height: 10.0),
                   npl,
                   SizedBox(height: 10.0),
