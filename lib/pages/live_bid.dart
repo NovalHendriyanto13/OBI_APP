@@ -3,11 +3,14 @@ import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter/material.dart';
+import 'package:chewie_audio/chewie_audio.dart';
+import 'package:video_player/video_player.dart';
 import 'package:toast/toast.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
+import 'package:obi_mobile/libraries/sound.dart';
 import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/models/m_npl.dart';
 import 'package:obi_mobile/repository/unit_repo.dart';
@@ -19,6 +22,10 @@ import 'package:obi_mobile/libraries/socket_io.dart';
 class LiveBid extends StatefulWidget {
   static String tag = 'live-bid-page';
   static String name = 'Live Bid';
+  final Map data;
+  
+  LiveBid(this.data);
+
   @override
   _LiveBidState createState() => _LiveBidState();
 }
@@ -43,82 +50,61 @@ class _LiveBidState extends State<LiveBid>{
   Map _param;
   SocketIo _socketIo = SocketIo();
   IO.Socket _socket;
+  Sound _sound = Sound();
+  Future<void> _soundBid;
+  Future<void> _soundOpen;
+  ChewieAudioController _bidSoundController;
+  ChewieAudioController _openSoundController;
+  VideoPlayerController _bidPlayer;
+  VideoPlayerController _openPlayer;
+  List _galleries;
 
   @override
   void initState() {
     super.initState();
+    _param = widget.data;
     _checkInternet.check(context);
     _refreshToken.run();
     _socket = _socketIo.connect();
-    initLiveBid();
-    timer = Timer.periodic(Duration(seconds: 2), (timer) { updatePrice(); });
+    _soundBid = _sound.bidPlayerInit();
+    _soundOpen = _sound.openPlayerInit();
+    _bidSoundController = _sound.getBidController();
+    _openSoundController = _sound.getOpenController();
+    initBid();
+    timer = Timer.periodic(Duration(seconds: 2), (timer) { updateBid(); });
   }
 
   @override
   void dispose() {
     timer.cancel();
+    _sound.dispose();
     super.dispose();
   }
 
-  initLiveBid() async{
+  initBid() async{
     if (_param != null) {
-      final paramLastBid = {
+      final paramInitBid = {
         'auction_id': _param['IdAuctions'],
-        'unit_id': _param['IdUnit'] 
       };
-      _socket.emit('initLive', paramLastBid);
-      _socket.on('getLastLive', (res) async {
-        bool isVibrate = false;
-        if (res['is_new'] == 0) {
-          if (_bidPrice != res['price'].toString()) {
-            _bidPrice = res['price'].toString();
-            isVibrate = true;
-          }
-          if (_panggilan != res['panggilan'].toString()) {
-            _panggilan = res['panggilan'].toString();
-            id = res['IdUnit'];
-            isVibrate = true;
-          }
-          if (_param['IdAuctions'] != res['unit']['IdAuctions']) {
-            _isSocket = true;
-            _param = res['unit'];
-            id = res['IdUnit'];
-            isVibrate = true;
-          }
-          setState(() {
-            _isSocket = _isSocket;
-            _param = _param;
-            id = id;
-            _bidPrice = _bidPrice;
-            _panggilan = _panggilan;
-          });
-
-          if (isVibrate) {
-            _vibrate();
-          }
-        }
-        else if (res['is_new'] == 1) {
-           setState(() {
-            _isSocket = true;
-            _param = res['unit'];
-            _panggilan = "0";
-            _bidPrice = res['price'].toString();
-            id = res['IdUnit'];
-          });
-          _vibrate();
-        }
-      });
+      _socket.emit('initLive', paramInitBid);
+      getLastBid();
     }
   }
 
-  updatePrice() async{
+  updateBid() async{
+
     if (_param != null) {
       final paramLastBid = {
         'auction_id': _param['IdAuctions'],
         'unit_id': _param['IdUnit'] 
       };
       _socket.emit('setLastLive', paramLastBid);
-      _socket.on('getLastLive', (res) async {
+      getLastBid();
+    }
+  }
+
+  getLastBid() {
+    _socket.on('getLastLive', (res) async {
         bool isVibrate = false;
         if (res['is_new'] == 0) {
           if (_bidPrice != res['price'].toString()) {
@@ -146,6 +132,10 @@ class _LiveBidState extends State<LiveBid>{
 
           if (isVibrate) {
             _vibrate();
+            if (_bidSoundController != null) _sound.dispose();
+            _soundBid = _sound.bidPlayerInit();
+            _bidSoundController = _sound.getBidController();
+            _bidSoundController.play();
           }
         }
         else if (res['is_new'] == 1) {
@@ -155,11 +145,15 @@ class _LiveBidState extends State<LiveBid>{
             _panggilan = "0";
             _bidPrice = res['price'].toString();
             id = res['IdUnit'];
+            _galleries = res['galleries'];
           });
           _vibrate();
+          if (_openSoundController != null) _sound.dispose();
+          _soundOpen = _sound.openPlayerInit();
+          _openSoundController = _sound.getOpenController();
+          _openSoundController.play();
         }
       });
-    }
   }
 
   void _vibrate() async{
@@ -172,61 +166,11 @@ class _LiveBidState extends State<LiveBid>{
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, LiveBid.tag);
 
-    final Map param = ModalRoute.of(context).settings.arguments;
-    id = param['IdUnit'];
-    
-    if (_isSocket == false) {
-      setState(() {
-        _param = param;
-        id = _param['IdUnit'];
-      });
-    }
-    _dataUnit = _unitRepo.detail(id);
-
-    final carouselSlider = FutureBuilder<M_Unit>(
-      future: _dataUnit,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          List _data = snapshot.data.getListData();
-          return CarouselSlider(
-            items: _data[0]['galleries'].map<Widget>((i) {
-              return Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(i['Image']),
-                      fit: BoxFit.fill
-                    )
-                  )
-                );
-            }).toList(),
-            options: CarouselOptions(
-              // height: 300,
-              aspectRatio: 16/9,
-              viewportFraction: 0.8,
-              initialPage: 0,
-              enableInfiniteScroll: true,
-              reverse: false,
-              autoPlay: true,
-              autoPlayInterval: Duration(seconds: 3),
-              autoPlayAnimationDuration: Duration(milliseconds: 800),
-              autoPlayCurve: Curves.fastOutSlowIn,
-              enlargeCenterPage: true,
-              scrollDirection: Axis.horizontal,
-            ),
-          );
-        }
-        else if (snapshot.hasError) {
-          return Text(snapshot.error.toString());
-        }
-        return Center(
-          child: CircularProgressIndicator(),
-        );
-      }
-    );
+    final _type = _param['Jenis'] != null ? _param['Jenis'] : 'mobil';
 
     final params = {
       "auction_id": _param['IdAuctions'],
-      "type": _param['Jenis'],
+      "type": _type,
     };
     final npl = FutureBuilder<M_Npl>(
       future: _nplRepo.activeNpl(params),
@@ -335,126 +279,162 @@ class _LiveBidState extends State<LiveBid>{
       }
     }
 
+    Widget body() {
+      if (_param['IdUnit'].toString() == '0') {
+        return Center(child: Text('Auction Belum Di Buka'));
+      }
+      else {
+        print(_param);
+        final carouselSlider = CarouselSlider(
+          items: _galleries.map<Widget>((i) {
+            return Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(i['image']),
+                    fit: BoxFit.fill
+                  )
+                )
+              );
+          }).toList(),
+          options: CarouselOptions(
+            // height: 300,
+            aspectRatio: 16/9,
+            viewportFraction: 0.8,
+            initialPage: 0,
+            enableInfiniteScroll: true,
+            reverse: false,
+            autoPlay: true,
+            autoPlayInterval: Duration(seconds: 3),
+            autoPlayAnimationDuration: Duration(milliseconds: 800),
+            autoPlayCurve: Curves.fastOutSlowIn,
+            enlargeCenterPage: true,
+            scrollDirection: Axis.horizontal,
+          ),
+        );
+        return Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            ListView(
+              padding: EdgeInsets.all(10.0),
+              children: [
+                carouselSlider,
+                // Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                Text('Harga Dasar : ' + _param['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                SizedBox(height: 15.0),
+                Text('LOT : ' + _param['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
+                SizedBox(height: 8.0),
+                Text(_param['Merk'] + ' ' + _param['Tipe'] + ' ' + _param['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(height: 8.0),
+                Row(
+                  children: [
+                    Text('Eks : ' + _param['GradeExterior']),
+                    Text(' | '),
+                    Text('Int : ' + _param['GradeInterior']),
+                    Text(' | '),
+                    Text('Msn :' + _param['GradeMesin'])
+                  ],
+                ),
+                SizedBox(height: 8.0),
+                Text('Kilometer : '),
+                SizedBox(height: 8.0),
+                Text('No Rangka : '),
+                SizedBox(height: 8.0),
+                Text('No Mesin : '),
+                SizedBox(height: 8.0),
+                Text('STNK : ' + _param['TglBerlakuSTNK'].toString()),
+                SizedBox(height: 8.0),
+                Text('Nota Pajak : ' + _param['TglBerlakuPajak'].toString()),
+                SizedBox(height: 8.0),
+                Text('BPKB : '),
+                SizedBox(height: 8.0),
+                Text('info : '),
+                SizedBox(height: 8.0),
+              ],
+            ),
+            
+            Container(
+              color: Colors.grey,
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 5.0),
+                      child: RichText(
+                        textAlign: TextAlign.left,
+                        text: TextSpan(
+                          style: TextStyle(color: Colors.black),
+                          children: [
+                            TextSpan(text: ' Panggilan '),
+                            TextSpan(
+                              text: _panggilan,
+                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
+                            )
+                          ] 
+                        )
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 5.0),
+                      child: RichText(
+                        textAlign: TextAlign.left,
+                        text: TextSpan(
+                          style: TextStyle(color: Colors.black),
+                          children: [
+                            TextSpan(text: 'Harga Penawaran '),
+                            TextSpan(
+                              text: price(),
+                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
+                            ),
+                          ] 
+                        )
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 5.0, left: 5.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(child: Text('Aktif Lelang')),
+                          Expanded(
+                            child: SwitchListTile(
+                              title: const Text('On/Off'),
+                              value: _enableBid,
+                              onChanged: (value) {
+                                setState(() {
+                                  _enableBid = value;
+                                });
+                              },
+                              activeTrackColor: Colors.lightGreenAccent,
+                              activeColor: Colors.green,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      // crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(child: npl),
+                        Expanded(child: btnSubmit),
+                      ],
+                    )
+                  ],
+                )
+              
+            ),
+          ],
+        );
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
         title: Text(LiveBid.name)
       ),
       drawer: _menu,
-      body: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          ListView(
-            padding: EdgeInsets.all(10.0),
-            children: [
-              carouselSlider,
-              // Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-              Text('Harga Dasar : ' + _param['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-              SizedBox(height: 15.0),
-              Text('LOT : ' + _param['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
-              SizedBox(height: 8.0),
-              Text(_param['Merk'] + ' ' + _param['Tipe'] + ' ' + _param['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 8.0),
-              Row(
-                children: [
-                  Text('Eks : ' + _param['GradeExterior']),
-                  Text(' | '),
-                  Text('Int : ' + _param['GradeInterior']),
-                  Text(' | '),
-                  Text('Msn :' + _param['GradeMesin'])
-                ],
-              ),
-              SizedBox(height: 8.0),
-              Text('Kilometer : '),
-              SizedBox(height: 8.0),
-              Text('No Rangka : '),
-              SizedBox(height: 8.0),
-              Text('No Mesin : '),
-              SizedBox(height: 8.0),
-              Text('STNK : ' + _param['TglBerlakuSTNK'].toString()),
-              SizedBox(height: 8.0),
-              Text('Nota Pajak : ' + _param['TglBerlakuPajak'].toString()),
-              SizedBox(height: 8.0),
-              Text('BPKB : '),
-              SizedBox(height: 8.0),
-              Text('info : '),
-              SizedBox(height: 8.0),
-            ],
-          ),
-          
-          Container(
-            color: Colors.grey,
-            child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(top: 5.0),
-                    child: RichText(
-                      textAlign: TextAlign.left,
-                      text: TextSpan(
-                        style: TextStyle(color: Colors.black),
-                        children: [
-                          TextSpan(text: ' Panggilan '),
-                          TextSpan(
-                            text: _panggilan,
-                            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
-                          )
-                        ] 
-                      )
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 5.0),
-                    child: RichText(
-                      textAlign: TextAlign.left,
-                      text: TextSpan(
-                        style: TextStyle(color: Colors.black),
-                        children: [
-                          TextSpan(text: 'Harga Penawaran '),
-                          TextSpan(
-                            text: price(),
-                            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
-                          ),
-                        ] 
-                      )
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 5.0, left: 5.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(child: Text('Aktif Lelang')),
-                        Expanded(
-                          child: SwitchListTile(
-                            title: const Text('On/Off'),
-                            value: _enableBid,
-                            onChanged: (value) {
-                              setState(() {
-                                _enableBid = value;
-                              });
-                            },
-                            activeTrackColor: Colors.lightGreenAccent,
-                            activeColor: Colors.green,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    // crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(child: npl),
-                      Expanded(child: btnSubmit),
-                    ],
-                  )
-                ],
-              )
-            
-          ),
-        ],
-      ),
+      body: body()
     );
   }  
 }

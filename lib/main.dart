@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
     MyUnit.tag : (context) => MyUnit(),
     Unit.tag : (context) => Unit(),
     Room.tag : (context) => Room(),
-    LiveBid.tag : (context) => LiveBid(),
+    LiveBid.tag : (context) => LiveBid(null),
     TermCondition.tag : (context) => TermCondition()
   };
   // This widget is the root of your application.

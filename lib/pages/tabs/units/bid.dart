@@ -1,6 +1,10 @@
+import 'package:flutter_countdown_timer/index.dart';
 import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:obi_mobile/libraries/session.dart';
+import 'package:obi_mobile/libraries/socket_io.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:toast/toast.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:obi_mobile/models/m_npl.dart';
@@ -18,13 +22,20 @@ class Bid extends StatelessWidget {
   NplRepo _nplRepo = NplRepo();
   String _lastPrice = '0';
   bool expiredBid = true;
-  List<String> _usedNpl = []; 
+  bool isOpenTime = true;
+  String _strOpen = 'Open In';
+  List<String> _usedNpl = [];
+  SocketIo _socketIo = SocketIo();
+  IO.Socket _socket;
+  Session _session = Session();
   
   Bid({this.data, this.detail});
 
   @override
   Widget build(BuildContext context) {
     TextEditingController _bid = TextEditingController();
+    _socket = _socketIo.connect();
+
     final _now = DateTime.now();
     final _nowDt = DateFormat('yyyy-MM-dd HH:mm').format(_now);
     String _auctionDateTime = this.data['TglAuctions'] + ' ' + this.data['EndTime'];
@@ -37,6 +48,11 @@ class Bid extends StatelessWidget {
     //open auction
     if (diffStart <= 0 && diffEnd > 0) {
       this.expiredBid = false;
+    }
+
+    if (diffStart >= 0) {
+      _strOpen = 'Closed In';
+      this.isOpenTime = false;
     }
 
     final carouselSlider = FutureBuilder<M_Unit>(
@@ -180,7 +196,8 @@ class Bid extends StatelessWidget {
                 bool statusBid = biding.getStatus();
                 if (statusBid == true) {
                   final msgSuccess = "Unit ini berhasil anda bid";
-                  _lastPrice = bidPrice.toString();
+                  // _lastPrice = bidPrice.toString();
+                  _lastPrice = NumberFormat.simpleCurrency(locale: 'id').format(int.parse(bidPrice));
                   _usedNpl.add(this._selectedNpl);
                   Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
                 }
@@ -201,9 +218,18 @@ class Bid extends StatelessWidget {
     final btnCancel = Padding(
       padding: EdgeInsets.symmetric(vertical: 16.0),
       child: MaterialButton(
-          onPressed: () {
+          onPressed: () async{
             this._selectedNpl = '';
             _bid..text = '';
+
+            final paramCancel = {
+              "auction_id": this.data['IdAuctions'],
+              "unit_id": this.data['IdUnit'],
+              "no_lot": this.data['NoLot']
+            };
+
+            await _bidRepo.deleteBid(paramCancel);
+            Toast.show('Unit ini telah anda cancel', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
           },
           child: Text('Cancel', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           color: Colors.red,
@@ -235,13 +261,29 @@ class Bid extends StatelessWidget {
             Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
           }
           else {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(), settings: RouteSettings(arguments: this.data)));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(this.data)));
           }
         },
       );
     }
 
+    getLastBid() async {
+      final userId = await _session.getInt('id');
+      final params = {
+        'user_id': userId,
+        "auction_id": this.data['IdAuctions'],
+        "unit_id": this.data['IdUnit'],
+      };
+      _socket.emit('setLastUserBid', params);
+      _socket.on('getLastPrice', (res) async {
+        _lastPrice = res.toString();
+      });
+    }
+
+    getLastBid();
+
     int endTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffEnd;
+    int startTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffStart;
     void onEnd() {
       this.expiredBid = true;
     }
@@ -256,9 +298,12 @@ class Bid extends StatelessWidget {
                 style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 24.0),
               ),
               CountdownTimer(
-                endTime: endTime,
+                endTime: startTime,
                 onEnd: onEnd,
                 textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+                widgetBuilder: (_, CurrentRemainingTime time) {
+                  return Text(_strOpen + time.days.toString() + ', ' + time.hours.toString() + ':' + time.min.toString() + ':' +time.sec.toString());
+                },
               ),
               join(),           
             ],
@@ -272,7 +317,12 @@ class Bid extends StatelessWidget {
               subtitle: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  CountdownTimer(endTime: endTime),
+                  CountdownTimer(
+                    endTime: endTime,
+                    widgetBuilder: (_, CurrentRemainingTime time) {
+                      return Text(_strOpen + time.days.toString() + ', ' + time.hours.toString() + ':' + time.min.toString() + ':' +time.sec.toString());
+                    },
+                  ),
                   SizedBox(height: 10.0),
                   Text('Harga Penawaran: Rp.' + _lastPrice),
                   SizedBox(height: 10.0),

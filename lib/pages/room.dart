@@ -27,8 +27,6 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
 
   Future<M_Auction> _dataList;
   AnimationController _liveAnimation;
-
-  final _now = DateTime.now();
   
   final delay = 1;
   
@@ -68,8 +66,9 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
   void navigatorAuction(data) {
     if (data['Online'].toString().toLowerCase() == 'floor') {
       bool expiredBid = true;
-      String _auctionDateTime = data['TglAuctions'] + ' ' + data['EndTime'];
-      String _auctionStartTime = data['TglAuctions'] + ' ' + data['StartTime'];
+      final _now = DateTime.now();
+      String _auctionDateTime = data['r_TglAuctions'] + ' ' + data['EndTime'];
+      String _auctionStartTime = data['r_TglAuctions'] + ' ' + data['StartTime'];
       final _nowDt = DateFormat('yyyy-MM-dd HH:mm').format(_now);
       final _d1 = DateTime.parse(_nowDt);
       final _auctionEndDate = DateTime.parse(_auctionDateTime);
@@ -86,7 +85,8 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
         Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
       }
       else {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data)));
+        data['IdUnit'] = '0';
+        Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(data), settings: RouteSettings(arguments: data)));
       }
     }
     else {
@@ -99,102 +99,98 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
     Drawer _menu = _drawerMenu.initialize(context, Room.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, Room.tag);
     
-    final _listNow = Expanded(
-      child: FutureBuilder<M_Auction>(
-        future: _dataList,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List _now = snapshot.data.getListData();
-            if (_now == null) {
-              return Center(child: Text('Could not connect API'));
-            }
-            if (_now[0]['now'].length <= 0) {
-              return Center(child: Text('No Data Found'));
-            }
-            else {
-              return ListView.builder(
-                itemCount: _now[0]['now'].length,
-                itemBuilder: (BuildContext context, int index) {
-                  List data = _now[0]['now'];
-                  final dateNow = data[index]['TglAuctions'] + ' ' + data[index]['StartTime'];
-                  return GestureDetector(
-                    child: Card(
-                      child: ListTile(
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children:[
-                            Text((data[index]['Kota']).toString().toUpperCase()),
-                            _blinkInfo(data[index])
-                          ]
-                        ),
-                        subtitle: Text(dateNow),
-                        trailing: Icon(Icons.more_vert),
+    final _listNow = FutureBuilder<M_Auction>(
+      future: _dataList,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List _now = snapshot.data.getListData();
+          if (_now == null) {
+            return Center(child: Text('Could not connect API'));
+          }
+          if (_now[0]['now'].length <= 0) {
+            return Center(child: Text('No Data Found'));
+          }
+          else {
+            return ListView.builder(
+              itemCount: _now[0]['now'].length,
+              itemBuilder: (BuildContext context, int index) {
+                List data = _now[0]['now'];
+                final dateNow = data[index]['TglAuctions'] + ' ' + data[index]['StartTime'];
+                return GestureDetector(
+                  child: Card(
+                    child: ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children:[
+                          Text((data[index]['Kota']).toString().toUpperCase()),
+                          _blinkInfo(data[index])
+                        ]
                       ),
+                      subtitle: Text(dateNow),
+                      trailing: Icon(Icons.more_vert),
                     ),
-                    onTap: () {
-                      navigatorAuction(data[index]);
-                    },
-                  );
-                }
-              );
-            }
+                  ),
+                  onTap: () {
+                    navigatorAuction(data[index]);
+                  },
+                );
+              }
+            );
           }
-          else if (snapshot.hasError) {
-            return Text(snapshot.error.toString());
-          }
-          return Center(child: Text('No Data Found'));
         }
-      )
+        else if (snapshot.hasError) {
+          return Text(snapshot.error.toString());
+        }
+        return Center(child: Text('No Data Found'));
+      }
     );
 
-    final _listNext = Expanded(
-      child: FutureBuilder<M_Auction>(
-        future: _dataList,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List _next = snapshot.data.getListData();
-            if (_next == null) {
-              return Center(child: Text('Could not connect API'));
-            }
-            if (_next[0]['next'].length <= 0) {
-              return Center(child: Text('No Data Found'));
-            }
-              else {
-              return ListView.builder(
-                itemCount: _next[0]['next'].length,
-                itemBuilder: (BuildContext context, int index) {
-                  List data = _next[0]['next'];
-                  final dateNext = data[index]['TglAuctions'] + ' ' + data[index]['StartTime'];
-                  return GestureDetector(
-                    child: Card(
-                      child: ListTile(
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children:[
-                            Text((data[index]['Kota']).toString().toUpperCase()),
-                            _blinkInfo(data[index])
-                          ]
-                        ),
-                        subtitle: Text(dateNext),
-                        trailing: Icon(Icons.more_vert),
+    final _listNext = FutureBuilder<M_Auction>(
+      future: _dataList,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List _next = snapshot.data.getListData();
+          if (_next == null) {
+            return Center(child: Text('Could not connect API'));
+          }
+          if (_next[0]['next'].length <= 0) {
+            return Center(child: Text('No Data Found'));
+          }
+            else {
+            return ListView.builder(
+              itemCount: _next[0]['next'].length,
+              itemBuilder: (BuildContext context, int index) {
+                List data = _next[0]['next'];
+                final dateNext = data[index]['TglAuctions'] + ' ' + data[index]['StartTime'];
+                return GestureDetector(
+                  child: Card(
+                    child: ListTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children:[
+                          Text((data[index]['Kota']).toString().toUpperCase()),
+                          _blinkInfo(data[index])
+                        ]
                       ),
+                      subtitle: Text(dateNext),
+                      trailing: Icon(Icons.more_vert),
                     ),
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data[index])));
-                    },
-                  );
-                }
-              );
-            }
+                  ),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data[index])));
+                  },
+                );
+              }
+            );
           }
-          else if (snapshot.hasError) {
-            return Text(snapshot.error.toString());
-          }
-          return Center(child: Text('No Data Found'));
         }
-      )
+        else if (snapshot.hasError) {
+          return Text(snapshot.error.toString());
+        }
+        return Center(child: Text('No Data Found'));
+      }
     );
 
     return Scaffold(

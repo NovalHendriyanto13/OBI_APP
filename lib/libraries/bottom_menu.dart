@@ -28,7 +28,7 @@ class BottomMenu {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.copy_rounded),
-          label: 'My NPL',
+          label: 'Beli NPL',
           backgroundColor: Colors.red
         ),
         BottomNavigationBarItem(

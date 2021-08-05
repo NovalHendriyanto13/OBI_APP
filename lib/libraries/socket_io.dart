@@ -18,7 +18,7 @@ class SocketIo{
       this.socket.onConnect((_) {
         print('Socket Connected');
       });
-      this.socket.onConnectError((data) => print('Error: '+data.toString()));
+      this.socket.onConnectError((data) => print('Error: '+ data.toString()));
 
       return this.socket;
     }
