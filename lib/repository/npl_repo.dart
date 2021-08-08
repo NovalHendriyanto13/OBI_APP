@@ -74,7 +74,6 @@ class NplRepo {
       'deposit': params['deposit'],
       'qty': params['qty'],
       'nominal': params['nominal'],
-      'norek': params['norek']
     });
     request.headers.addAll(header);
 

@@ -110,6 +110,32 @@ class BidRepo {
     }
   }
 
+  Future<M_Bid> lastUserBid(params) async {
+
+    Session _session = new Session();
+    String token = await _session.getString('token');
+
+    Map<String, String> header = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    };
+
+    final data = jsonEncode(params);
+
+    final response = await http.post(
+      Uri.http(apiUrl, 'last-user-bid'),
+      headers: header,
+      body: data
+    );
+
+    if (response.statusCode==200) {
+      return M_Bid.fromJson(jsonDecode(response.body));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
+
   Future<M_Bid> deleteBid(params) async {
 
     Session _session = new Session();
@@ -123,7 +149,7 @@ class BidRepo {
     final data = jsonEncode(params);
 
     final response = await http.post(
-      Uri.http(apiUrl, 'delete-bid'),
+      Uri.http(apiUrl, 'cancel-bid'),
       headers: header,
       body: data
     );

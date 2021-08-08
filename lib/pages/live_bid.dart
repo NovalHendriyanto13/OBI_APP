@@ -10,6 +10,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
+import 'package:obi_mobile/libraries/session.dart';
 import 'package:obi_mobile/libraries/sound.dart';
 import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/models/m_npl.dart';
@@ -48,16 +49,25 @@ class _LiveBidState extends State<LiveBid>{
   String id = "";
   Timer timer;
   Map _param;
+  Session _session = new Session();
   SocketIo _socketIo = SocketIo();
   IO.Socket _socket;
   Sound _sound = Sound();
   Future<void> _soundBid;
   Future<void> _soundOpen;
+  Future<void> _soundWin;
+  Future<void> _soundClose;
   ChewieAudioController _bidSoundController;
   ChewieAudioController _openSoundController;
+  ChewieAudioController _winSoundController;
+  ChewieAudioController _closeSoundController;
   VideoPlayerController _bidPlayer;
   VideoPlayerController _openPlayer;
+  VideoPlayerController _winPlayer;
+  VideoPlayerController _closePlayer;
   List _galleries;
+  int userBid;
+  bool isClose = false;
 
   @override
   void initState() {
@@ -68,10 +78,14 @@ class _LiveBidState extends State<LiveBid>{
     _socket = _socketIo.connect();
     _soundBid = _sound.bidPlayerInit();
     _soundOpen = _sound.openPlayerInit();
+    _soundWin = _sound.winPlayerInit();
+    _soundClose = _sound.closePlayerInit();
     _bidSoundController = _sound.getBidController();
     _openSoundController = _sound.getOpenController();
+    _winSoundController = _sound.getWinController();
+    _closeSoundController = _sound.getCloseController();
     initBid();
-    timer = Timer.periodic(Duration(seconds: 2), (timer) { updateBid(); });
+    timer = Timer.periodic(Duration(seconds: 1), (timer) { updateBid(); });
   }
 
   @override
@@ -105,37 +119,55 @@ class _LiveBidState extends State<LiveBid>{
 
   getLastBid() {
     _socket.on('getLastLive', (res) async {
-        bool isVibrate = false;
+        bool isBid = false;
+        int userid = await _session.getInt('id');
+
+        print(res);
         if (res['is_new'] == 0) {
           if (_bidPrice != res['price'].toString()) {
             _bidPrice = res['price'].toString();
-            isVibrate = true;
+            _param = res['unit'];
+            isBid = true;
           }
           if (_panggilan != res['panggilan'].toString()) {
             _panggilan = res['panggilan'].toString();
             id = res['IdUnit'];
-            isVibrate = true;
+            _param = res['unit'];
+            isBid = true;
           }
           if (_param['IdAuctions'] != res['unit']['IdAuctions']) {
             _isSocket = true;
             _param = res['unit'];
             id = res['IdUnit'];
-            isVibrate = true;
+            isBid = true;
           }
+
           setState(() {
             _isSocket = _isSocket;
             _param = _param;
             id = id;
             _bidPrice = _bidPrice;
             _panggilan = _panggilan;
+            _galleries = res['galleries'];
           });
 
-          if (isVibrate) {
-            _vibrate();
-            if (_bidSoundController != null) _sound.dispose();
+          if (isBid) {
             _soundBid = _sound.bidPlayerInit();
             _bidSoundController = _sound.getBidController();
             _bidSoundController.play();
+          }
+          if (res['close'] == true) {
+            if (res['user_id'] == null) {
+              // lose
+              _soundClose = _sound.closePlayerInit();
+              _closeSoundController = _sound.getCloseController();
+              _closeSoundController.play();
+            }
+            else if (res['user_id'] == userid) {
+              _soundWin = _sound.winPlayerInit();
+              _winSoundController = _sound.getWinController();
+              _winSoundController.play();
+            }
           }
         }
         else if (res['is_new'] == 1) {
@@ -147,8 +179,6 @@ class _LiveBidState extends State<LiveBid>{
             id = res['IdUnit'];
             _galleries = res['galleries'];
           });
-          _vibrate();
-          if (_openSoundController != null) _sound.dispose();
           _soundOpen = _sound.openPlayerInit();
           _openSoundController = _sound.getOpenController();
           _openSoundController.play();
@@ -230,10 +260,13 @@ class _LiveBidState extends State<LiveBid>{
         child: MaterialButton(
           onPressed: () {
             if (this._enableBid == false) {
-              Toast.show('Status Anda Tidak Aktif', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+              Toast.show('Status Anda Tidak Aktif', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
             }
             else if (this._selectedNpl == '') {
-              Toast.show('Anda Belom pilih NPL/ NPL tidak ada', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+              Toast.show('Anda Belom pilih NPL/ NPL tidak ada', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
+            }
+            else if (_panggilan == '2') {
+              // Toast.show('No Lot sudah panggilan ke 2, Harap tunggu untuk bid lainnya', context)
             }
             else {
               final data = {
@@ -253,7 +286,7 @@ class _LiveBidState extends State<LiveBid>{
                 else {
                   Map errMessage = value.getMessage();
                   String msg = errMessage['message'];
-                  Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+                  Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
                 }
               });
             }
@@ -266,16 +299,10 @@ class _LiveBidState extends State<LiveBid>{
     
     String price() {
       if (_bidPrice == '0') {
-        print('ini');
-        print(_param);
-        return _param['HargaLimit'].toString();
-        // return (NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']));
+        return 'Rp.' + _param['HargaLimit'].toString();
       }
       else {
-        int _bp = int.parse(_bidPrice);
-        print('itu');
-        return _bidPrice;
-        // return (NumberFormat.simpleCurrency(locale: 'id').format(_bp));
+        return 'Rp.' + _bidPrice;
       }
     }
 
@@ -284,7 +311,9 @@ class _LiveBidState extends State<LiveBid>{
         return Center(child: Text('Auction Belum Di Buka'));
       }
       else {
-        print(_param);
+        if (_galleries == null) {
+          _galleries = [{"image": _param["image"]}];
+        }
         final carouselSlider = CarouselSlider(
           items: _galleries.map<Widget>((i) {
             return Container(
@@ -319,7 +348,7 @@ class _LiveBidState extends State<LiveBid>{
               children: [
                 carouselSlider,
                 // Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-                Text('Harga Dasar : ' + _param['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                Text('Harga Dasar : Rp.' + _param['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
                 SizedBox(height: 15.0),
                 Text('LOT : ' + _param['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
                 SizedBox(height: 8.0),

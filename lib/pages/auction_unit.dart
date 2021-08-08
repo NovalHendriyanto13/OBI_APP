@@ -238,7 +238,7 @@ class _AuctionUnitState extends State<AuctionUnit> with SingleTickerProviderStat
                           children: [
                           Padding(
                             padding: EdgeInsets.only(left: 12.0, bottom: 10.0),
-                            child: Align(alignment: Alignment.centerLeft, child: Text(NumberFormat.simpleCurrency(locale: 'id').format(_list[index]['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold)))
+                            child: Align(alignment: Alignment.centerLeft, child: Text(NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(_list[index]['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold)))
                         ),
                           Padding(
                             padding: EdgeInsets.only(right: 12.0, bottom: 10.0),

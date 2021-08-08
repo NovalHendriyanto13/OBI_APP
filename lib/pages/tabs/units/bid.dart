@@ -2,9 +2,7 @@ import 'package:flutter_countdown_timer/index.dart';
 import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:obi_mobile/libraries/session.dart';
-import 'package:obi_mobile/libraries/socket_io.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:obi_mobile/models/m_bid.dart';
 import 'package:toast/toast.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:obi_mobile/models/m_npl.dart';
@@ -22,20 +20,14 @@ class Bid extends StatelessWidget {
   NplRepo _nplRepo = NplRepo();
   String _lastPrice = '0';
   bool expiredBid = true;
-  bool isOpenTime = true;
-  String _strOpen = 'Open In';
+  String _strOpen = 'Open In ';
   List<String> _usedNpl = [];
-  SocketIo _socketIo = SocketIo();
-  IO.Socket _socket;
-  Session _session = Session();
   
   Bid({this.data, this.detail});
 
   @override
   Widget build(BuildContext context) {
     TextEditingController _bid = TextEditingController();
-    _socket = _socketIo.connect();
-
     final _now = DateTime.now();
     final _nowDt = DateFormat('yyyy-MM-dd HH:mm').format(_now);
     String _auctionDateTime = this.data['TglAuctions'] + ' ' + this.data['EndTime'];
@@ -48,11 +40,7 @@ class Bid extends StatelessWidget {
     //open auction
     if (diffStart <= 0 && diffEnd > 0) {
       this.expiredBid = false;
-    }
-
-    if (diffStart >= 0) {
-      _strOpen = 'Closed In';
-      this.isOpenTime = false;
+      _strOpen = 'Closed In ';
     }
 
     final carouselSlider = FutureBuilder<M_Unit>(
@@ -165,6 +153,8 @@ class Bid extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 16.0),
       child: MaterialButton(
           onPressed: () async {
+            FocusScope.of(context).unfocus();
+            String bidPrice = _bid.text.toString();
             if (this.expiredBid) {
               String expireMsg = 'Auction Sudah di tutup';
               if (this.data['Status'].toString() == '1') {
@@ -173,38 +163,45 @@ class Bid extends StatelessWidget {
               else if (this.data['Status'].toString() == '2') {
                 expireMsg = 'Auction Sudah di tutup, Unit ini sudah terjual';
               }
-              Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+              Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
             }
             else {
-              FocusScope.of(context).unfocus();
-              if (_usedNpl.contains(this._selectedNpl)) {
-                String usedMsg = 'NPL sudah terpakai';
-                Toast.show(usedMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+              if (this.data['Status'].toString() == '2') {
+                final expireMsg = 'Unit ini sudah terjual';
+                Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
               }
               else {
-                String bidPrice = _bid.text.toString();
-                final data = {
-                  "npl": this._selectedNpl,
-                  "auction_id": this.data['IdAuctions'],
-                  "unit_id": this.data['IdUnit'],
-                  "type": this.data['Jenis'],
-                  "no_lot": this.data['NoLot'],
-                  "bid_price" : bidPrice
-                };
-
-                final biding = await _bidRepo.submit(data);
-                bool statusBid = biding.getStatus();
-                if (statusBid == true) {
-                  final msgSuccess = "Unit ini berhasil anda bid";
-                  // _lastPrice = bidPrice.toString();
-                  _lastPrice = NumberFormat.simpleCurrency(locale: 'id').format(int.parse(bidPrice));
-                  _usedNpl.add(this._selectedNpl);
-                  Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
+                if (_usedNpl.contains(this._selectedNpl)) {
+                  String usedMsg = 'NPL sudah terpakai';
+                  Toast.show(usedMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
+                }
+                else if (bidPrice == '') {
+                  Toast.show("Nominal Bid Harus Diisi", context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
                 }
                 else {
-                  Map errMessage = biding.getMessage();
-                  String msg = errMessage['message'];
-                  Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+                  _lastPrice = NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(int.parse(bidPrice));
+                  final data = {
+                    "npl": this._selectedNpl,
+                    "auction_id": this.data['IdAuctions'],
+                    "unit_id": this.data['IdUnit'],
+                    "type": this.data['Jenis'],
+                    "no_lot": this.data['NoLot'],
+                    "bid_price" : bidPrice
+                  };
+
+                  final biding = await _bidRepo.submit(data);
+                  bool statusBid = biding.getStatus();
+                  if (statusBid == true) {
+                    final msgSuccess = "Unit ini berhasil anda bid";
+                    
+                    _usedNpl.add(this._selectedNpl);
+                    Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
+                  }
+                  else {
+                    Map errMessage = biding.getMessage();
+                    String msg = errMessage['message'];
+                    Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
+                  }
                 }
               }
             }
@@ -222,6 +219,8 @@ class Bid extends StatelessWidget {
             this._selectedNpl = '';
             _bid..text = '';
 
+            _lastPrice = 'Rp. 0';
+
             final paramCancel = {
               "auction_id": this.data['IdAuctions'],
               "unit_id": this.data['IdUnit'],
@@ -237,58 +236,14 @@ class Bid extends StatelessWidget {
       ),
     );
 
-    join() {
-      return TextButton(
-        child: Text(
-          'Ikut Live Auction Sekarang', 
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold
-          )
-        ),
-        style: ButtonStyle(
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18.0),
-              side: BorderSide(color:Colors.blue)
-            )
-          ),
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-        ),
-        onPressed: () {
-          if (this.expiredBid) {
-            String expireMsg = 'Auction Belum Di Buka';
-            Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
-          }
-          else {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(this.data)));
-          }
-        },
-      );
-    }
-
-    getLastBid() async {
-      final userId = await _session.getInt('id');
-      final params = {
-        'user_id': userId,
-        "auction_id": this.data['IdAuctions'],
-        "unit_id": this.data['IdUnit'],
-      };
-      _socket.emit('setLastUserBid', params);
-      _socket.on('getLastPrice', (res) async {
-        _lastPrice = res.toString();
-      });
-    }
-
-    getLastBid();
-
     int endTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffEnd;
     int startTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffStart;
     void onEnd() {
       this.expiredBid = true;
     }
-    Widget bidPage() {
+    Widget bidPage(){
       if (this.data['Online'].toString().trim() == 'floor') {
+        this.expiredBid = false;
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -302,53 +257,120 @@ class Bid extends StatelessWidget {
                 onEnd: onEnd,
                 textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
                 widgetBuilder: (_, CurrentRemainingTime time) {
-                  return Text(_strOpen + time.days.toString() + ', ' + time.hours.toString() + ':' + time.min.toString() + ':' +time.sec.toString());
+                  if (time != null) {
+                    String days = time.days != null ? time.days.toString() + ' Days, ' : '';
+                    String hours = time.hours != null ? time.hours.toString(): '00';
+                    String min = time.min != null ? time.min.toString(): '00';
+                    String sec = time.sec != null ? time.sec.toString(): '00';
+                    return Text(_strOpen + days + hours + ':' + min + ':' + sec);
+                  } else {
+                    return Text('Auction Sedang Berlangsung');
+                  }
                 },
               ),
-              join(),           
+              TextButton(
+                child: Text(
+                  'Ikut Live Auction Sekarang', 
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold
+                  )
+                ),
+                style: ButtonStyle(
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                      side: BorderSide(color:Colors.blue)
+                    )
+                  ),
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                ),
+                onPressed: () {
+                  if (!this.expiredBid) {
+                    String expireMsg = 'Auction Belum Di Buka';
+                    Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
+                  }
+                  else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(this.data)));
+                  }
+                },
+              ),     
             ],
           )
         );
       }
       else {
-        return Card(
-            child: ListTile(
-              title: Text('Auction #' + this.data['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  CountdownTimer(
-                    endTime: endTime,
-                    widgetBuilder: (_, CurrentRemainingTime time) {
-                      return Text(_strOpen + time.days.toString() + ', ' + time.hours.toString() + ':' + time.min.toString() + ':' +time.sec.toString());
-                    },
-                  ),
-                  SizedBox(height: 10.0),
-                  Text('Harga Penawaran: Rp.' + _lastPrice),
-                  SizedBox(height: 10.0),
-                  npl,
-                  SizedBox(height: 10.0),
-                  bid,
-                  SizedBox(height: 10.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        final _lastBid = _bidRepo.lastUserBid({
+          "auction_id": this.data['IdAuctions'],
+          "unit_id": this.data['IdUnit'],
+        });
+        return FutureBuilder<M_Bid>(
+          future: _lastBid,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              List _dataLastBid = snapshot.data.getData();
+              _lastPrice = _dataLastBid.length > 0 ? NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(_dataLastBid[0]['Nominal']) : "Rp. 0,00";
+              return Card(
+                child: ListTile(
+                  title: Text('Auction #' + this.data['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      btnSubmit,
-                      btnCancel
+                      CountdownTimer(
+                        endTime: endTime,
+                        onEnd: onEnd,
+                        widgetBuilder: (_, CurrentRemainingTime time) {
+                          if (time != null) {
+                            String days = time.days != null ? time.days.toString() + ' Days, ' : '';
+                            String hours = time.hours != null ? time.hours.toString(): '00';
+                            String min = time.min != null ? time.min.toString(): '00';
+                            String sec = time.sec != null ? time.sec.toString(): '00';
+                            return Text(_strOpen + days + hours + ':' + min + ':' + sec);
+                          } else {
+                            return Text('Auction sudah di tutup');
+                          }
+                        },
+                      ),
+                      SizedBox(height: 10.0),
+                      Text('Harga Penawaran: ' + _lastPrice),
+                      SizedBox(height: 10.0),
+                      npl,
+                      SizedBox(height: 10.0),
+                      bid,
+                      SizedBox(height: 10.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          btnSubmit,
+                          btnCancel
+                        ],
+                      )
                     ],
-                  )
-                ],
-              ),
-            )
-          );
+                  ),
+                )
+              );
+            }
+            else if (snapshot.hasError) {
+              return Text(snapshot.error.toString());
+            }
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }); 
       }
     }
 
+    final isSold = this.data['Status'] == 2 ? '( SOLD )' : '';
     return ListView(
       padding: EdgeInsets.all(10.0),
       children: [
         carouselSlider,
-        Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(this.data['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+        Row(
+          children: [
+            Expanded(child: Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(this.data['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0))),
+            Text(isSold,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17.0, color: Colors.red)),
+          ],
+        ),
         SizedBox(height: 15.0),
         bidPage()
       ],

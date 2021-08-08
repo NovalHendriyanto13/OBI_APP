@@ -52,11 +52,17 @@ class Info extends StatelessWidget {
       }
     );
 
+    final isSold = this.data['Status'] == 2 ? '( SOLD )' : '';
     return ListView(
       padding: EdgeInsets.all(10.0),
       children: [
         carouselSlider,
-        Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(this.data['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+        Row(
+          children: [
+            Expanded(child: Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(this.data['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0))),
+            Text(isSold,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17.0, color: Colors.red)),
+          ],
+        ),
         SizedBox(height: 15.0),
         Text('LOT : ' + this.data['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
         SizedBox(height: 8.0),

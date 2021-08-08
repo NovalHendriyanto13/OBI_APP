@@ -305,7 +305,7 @@ class _RegState extends State<Reg> {
       ),
       onPressed: () {
         if (_toc == false) {
-          Toast.show("Silakan centang Syarat dan Ketentuan terlebih dahulu!", context, duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM, backgroundColor: Colors.red);
+          Toast.show("Silakan centang Syarat dan Ketentuan terlebih dahulu!", context, duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM, backgroundColor: Colors.orange);
         }
         else {
           setState(() {
@@ -359,7 +359,7 @@ class _RegState extends State<Reg> {
             }
             else {
               String errMessage = value.getStringMessage();
-              Toast.show(errMessage, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.red);
+              Toast.show(errMessage, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
             }
 
             setState(() {

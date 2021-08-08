@@ -269,42 +269,47 @@ class _BuyNplState extends State<BuyNpl> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
         ),
         onPressed: () {
-          setState(() {
-              _processState = 1;
-            });
-          
-          final delay = 5;
-
-          var param = {
-            'auction_id': _selectedAuction.toString(),
-            'type': _selectedType.toString(),
-            'an': _an.text.toString(),
-            'deposit': _totalPayment.text.toString(),
-            'qty': _totalNpl.text.toString(),
-            'nominal': _nplAmount.toString()
-          };
-
-          _nplRepo.create(param, _transImage).then((value) {
-            bool status = value.getStatus();
-            if (status == true) {
-              String data = value.getStringData();
-              Toast.show(data, context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM, backgroundColor: Colors.green);
-
-              Duration _duration = Duration(seconds: delay);
-              Timer _timer = Timer(_duration, () {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context)=>Npl()));
-              });
-            }
-            else {
-              Map errMessage = value.getMessage();
-              String msg = errMessage['message'];
-              Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
-            }
-
+          FocusScope.of(context).unfocus();
+          if (_toc == true) {
             setState(() {
-              _processState = 0;
-            });
+                _processState = 1;
+              });
+            
+            final delay = 5;
+
+            var param = {
+              'auction_id': _selectedAuction.toString(),
+              'type': _selectedType.toString(),
+              'an': _an.text.toString(),
+              'deposit': _totalPayment.text.toString(),
+              'qty': _totalNpl.text.toString(),
+              'nominal': _nplAmount.toString()
+            };
+
+            _nplRepo.create(param, _transImage).then((value) {
+              bool status = value.getStatus();
+              if (status == true) {
+                String data = value.getStringData();
+                Toast.show(data, context, duration: Toast.LENGTH_LONG , gravity: Toast.BOTTOM, backgroundColor: Colors.green);
+
+                Duration _duration = Duration(seconds: delay);
+                Timer(_duration, () {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context)=>Npl()));
+                });
+              }
+              else {
+                Map errMessage = value.getMessage();
+                String msg = errMessage['message'];
+                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.orange);
+              }
+
+              setState(() {
+                _processState = 0;
+              });
           });
+          } else {
+            Toast.show("Silakan Centang Syarat dan Ketentuan kami", context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
+          }
         }, 
       );
 

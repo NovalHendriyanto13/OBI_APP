@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
@@ -51,23 +52,33 @@ class _BidState extends State<Bid> {
             return ListView.builder(
               itemCount: _data.length,
               itemBuilder: (context, index) {
+                String _price = _data[index]['HargaTerbentuk'] != null ? NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(_data[index]['HargaTerbentuk']) : "Rp. 0";
                 return Card(
                   child: ListTile(
                     title: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_data[index]['TglAuctions'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                        Text('Tanggal Auction:' +_data[index]['TglAuctions'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                       ]),
                     subtitle: Column(
                       children: [
-                        SizedBox(height:8.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('Auction : ' + _data[index]['IdAuctions'] )),
-                        SizedBox(height:8.0),
+                        Text('Auction : ' + _data[index]['IdAuctions'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),),
+                        SizedBox(height:5.0),
+                        Text(_data[index]['Merk'] + ' ' + _data[index]['Tipe'] + ' (' + _data[index]['Tahun'] + ')', style: TextStyle(fontWeight: FontWeight.bold)),
+                        SizedBox(height:5.0),
                         Align(alignment: Alignment.centerLeft, child: Text('Lot : ' + _data[index]['NoLOT'] )),
-                        SizedBox(height:8.0),
+                        SizedBox(height:5.0),
                         Align(alignment: Alignment.centerLeft, child: Text('No Polisi : ' + _data[index]['NoPolisi'] )),
-                        SizedBox(height:8.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('Status : ' + _data[index]['statusbidx'] )),
+                        SizedBox(height:5.0),
+                        Align(alignment: Alignment.centerLeft, child: Text('Tanggal Penawaran : ' + _data[index]['BidTime'] )),
+                        SizedBox(height:5.0),
+                        Align(alignment: Alignment.centerLeft, child: Text('Harga Penawaran: ' + NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(_data[index]['Nominal']))),
+                        SizedBox(height:5.0),
+                        Align(alignment: Alignment.centerLeft, child: Text('Tanggal Pemenang : ' + _data[index]['WinnerTime'] )),
+                        SizedBox(height: 5.0),
+                        Align(alignment: Alignment.centerLeft, child: Text('Harga Terbentuk : ' + _price)),
+                        SizedBox(height:5.0),
+                        Align(alignment: Alignment.centerRight, child: Text('Status : ' + _data[index]['statusbidx'] )),
                       ],
                     ),
                   ),

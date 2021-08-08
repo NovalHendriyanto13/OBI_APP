@@ -79,7 +79,7 @@ class _ForgotState extends State<Forgot> {
           else {
             Map errMessage = value.getMessage();
             String msg = errMessage['message'];
-            Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.red);
+            Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.orange);
           }
         });
       }, 
