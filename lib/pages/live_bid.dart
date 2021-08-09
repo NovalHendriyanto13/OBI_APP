@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
+import 'package:flutter_countdown_timer/index.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter/material.dart';
 import 'package:chewie_audio/chewie_audio.dart';
@@ -68,6 +70,7 @@ class _LiveBidState extends State<LiveBid>{
   List _galleries;
   int userBid;
   bool isClose = false;
+  bool isWin = false;
 
   @override
   void initState() {
@@ -76,14 +79,14 @@ class _LiveBidState extends State<LiveBid>{
     _checkInternet.check(context);
     _refreshToken.run();
     _socket = _socketIo.connect();
-    _soundBid = _sound.bidPlayerInit();
-    _soundOpen = _sound.openPlayerInit();
-    _soundWin = _sound.winPlayerInit();
-    _soundClose = _sound.closePlayerInit();
-    _bidSoundController = _sound.getBidController();
-    _openSoundController = _sound.getOpenController();
-    _winSoundController = _sound.getWinController();
-    _closeSoundController = _sound.getCloseController();
+    // _soundBid = _sound.bidPlayerInit();
+    // _soundOpen = _sound.openPlayerInit();
+    // _soundWin = _sound.winPlayerInit();
+    // _soundClose = _sound.closePlayerInit();
+    // _bidSoundController = _sound.getBidController();
+    // _openSoundController = _sound.getOpenController();
+    // _winSoundController = _sound.getWinController();
+    // _closeSoundController = _sound.getCloseController();
     initBid();
     timer = Timer.periodic(Duration(seconds: 1), (timer) { updateBid(); });
   }
@@ -91,7 +94,7 @@ class _LiveBidState extends State<LiveBid>{
   @override
   void dispose() {
     timer.cancel();
-    _sound.dispose();
+    // _sound.dispose();
     super.dispose();
   }
 
@@ -142,6 +145,21 @@ class _LiveBidState extends State<LiveBid>{
             isBid = true;
           }
 
+          if (isBid) {
+            // _soundBid = _sound.bidPlayerInit();
+            // _bidSoundController = _sound.getBidController();
+            // _bidSoundController.play();
+          }
+          if (res['close'] == true) {
+            if (res['user_id'] == userid) {
+              // win
+
+            }
+            else {
+              // lose
+            }
+          }
+
           setState(() {
             _isSocket = _isSocket;
             _param = _param;
@@ -150,25 +168,6 @@ class _LiveBidState extends State<LiveBid>{
             _panggilan = _panggilan;
             _galleries = res['galleries'];
           });
-
-          if (isBid) {
-            _soundBid = _sound.bidPlayerInit();
-            _bidSoundController = _sound.getBidController();
-            _bidSoundController.play();
-          }
-          if (res['close'] == true) {
-            if (res['user_id'] == null) {
-              // lose
-              _soundClose = _sound.closePlayerInit();
-              _closeSoundController = _sound.getCloseController();
-              _closeSoundController.play();
-            }
-            else if (res['user_id'] == userid) {
-              _soundWin = _sound.winPlayerInit();
-              _winSoundController = _sound.getWinController();
-              _winSoundController.play();
-            }
-          }
         }
         else if (res['is_new'] == 1) {
            setState(() {
@@ -179,9 +178,9 @@ class _LiveBidState extends State<LiveBid>{
             id = res['IdUnit'];
             _galleries = res['galleries'];
           });
-          _soundOpen = _sound.openPlayerInit();
-          _openSoundController = _sound.getOpenController();
-          _openSoundController.play();
+          // _soundOpen = _sound.openPlayerInit();
+          // _openSoundController = _sound.getOpenController();
+          // _openSoundController.play();
         }
       });
   }
@@ -280,6 +279,11 @@ class _LiveBidState extends State<LiveBid>{
               _bidRepo.live(data).then((value) {
                 bool status = value.getStatus();
                 if (status == true) {
+                  Map data = value.getData();
+                  setState((){
+                    _bidPrice = data['bid_price'].toString();
+                  });
+
                   final msgSuccess = "Unit ini berhasil anda bid";
                   Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
                 }
@@ -308,7 +312,35 @@ class _LiveBidState extends State<LiveBid>{
 
     Widget body() {
       if (_param['IdUnit'].toString() == '0') {
-        return Center(child: Text('Auction Belum Di Buka'));
+        final _now = DateTime.now();
+        final _nowDt = DateFormat('yyyy-MM-dd HH:mm').format(_now);
+        String _auctionStartTime = _param['r_TglAuctions'] + ' ' + _param['StartTime'];
+        final _d1 = DateTime.parse(_nowDt);
+        final _auctionStartDate = DateTime.parse(_auctionStartTime);
+        final diffStart = _auctionStartDate.difference(_d1).inSeconds;
+        int startTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffStart;
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text('Auction Belum Di Buka', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+              CountdownTimer(
+                endTime: startTime,
+                widgetBuilder: (_, CurrentRemainingTime time) {
+                  if (time != null) {
+                    String days = time.days != null ? time.days.toString() + ' Days, ' : '';
+                    String hours = time.hours != null ? time.hours.toString(): '00';
+                    String min = time.min != null ? time.min.toString(): '00';
+                    String sec = time.sec != null ? time.sec.toString(): '00';
+                    return Text("Open In : " + days + hours + ':' + min + ':' + sec, style: TextStyle(fontSize: 15.0),);
+                  } else {
+                    return Text(' ... ');
+                  }
+                },
+              ),
+            ])
+        );
       }
       else {
         if (_galleries == null) {

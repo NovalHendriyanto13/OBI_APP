@@ -286,13 +286,9 @@ class Bid extends StatelessWidget {
                   backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
                 ),
                 onPressed: () {
-                  if (!this.expiredBid) {
-                    String expireMsg = 'Auction Belum Di Buka';
-                    Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
-                  }
-                  else {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(this.data)));
-                  }
+                  this.data['IdUnit'] = '0';
+                  this.data['r_TglAuctions'] = this.data['TglAuctions'];
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LiveBid(this.data)));
                 },
               ),     
             ],

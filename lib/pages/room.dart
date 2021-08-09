@@ -80,14 +80,15 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
       if (diffStart <= 0 && diffEnd > 0) {
         expiredBid = false;
       }
-      if (expiredBid) {
-        String expireMsg = 'Auction Belum Di Buka';
-        Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
-      }
-      else {
+      // if (expiredBid) {
+      //   String expireMsg = 'Auction Belum Di Buka';
+      //   Toast.show(expireMsg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
+      // }
+      // else {
         data['IdUnit'] = '0';
-        Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(data), settings: RouteSettings(arguments: data)));
-      }
+        print(data);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(data)));
+      // }
     }
     else {
       Navigator.push(context, MaterialPageRoute(builder: (context) => AuctionDetail(), settings: RouteSettings(arguments: data)));
