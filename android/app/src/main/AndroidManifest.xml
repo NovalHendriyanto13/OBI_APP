@@ -2,7 +2,7 @@
     package="com.example.obi_mobile">
    
    <application
-        android:label="OTOBID"
+        android:label="Otobid Indonesia"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity

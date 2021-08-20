@@ -47,7 +47,7 @@ class _LiveBidState extends State<LiveBid>{
   String _selectedNpl = '';
   String _bidPrice = "0";
   bool _isSocket = false;
-  String _panggilan = "0";
+  String _panggilan = "Panggilan : 0";
   String id = "";
   Timer timer;
   Map _param;
@@ -83,10 +83,10 @@ class _LiveBidState extends State<LiveBid>{
     // _soundOpen = _sound.openPlayerInit();
     // _soundWin = _sound.winPlayerInit();
     // _soundClose = _sound.closePlayerInit();
-    // _bidSoundController = _sound.getBidController();
-    // _openSoundController = _sound.getOpenController();
-    // _winSoundController = _sound.getWinController();
-    // _closeSoundController = _sound.getCloseController();
+    _bidSoundController = _sound.getBidController();
+    _openSoundController = _sound.getOpenController();
+    _winSoundController = _sound.getWinController();
+    _closeSoundController = _sound.getCloseController();
     initBid();
     timer = Timer.periodic(Duration(seconds: 1), (timer) { updateBid(); });
   }
@@ -94,7 +94,7 @@ class _LiveBidState extends State<LiveBid>{
   @override
   void dispose() {
     timer.cancel();
-    // _sound.dispose();
+    _sound.dispose();
     super.dispose();
   }
 
@@ -133,7 +133,7 @@ class _LiveBidState extends State<LiveBid>{
             isBid = true;
           }
           if (_panggilan != res['panggilan'].toString()) {
-            _panggilan = res['panggilan'].toString();
+            _panggilan = 'Panggilan : ' + res['panggilan'].toString();
             id = res['IdUnit'];
             _param = res['unit'];
             isBid = true;
@@ -146,17 +146,20 @@ class _LiveBidState extends State<LiveBid>{
           }
 
           if (isBid) {
-            // _soundBid = _sound.bidPlayerInit();
+            if (_soundBid == null) {
+              _soundBid = _sound.bidPlayerInit();
+            }
             // _bidSoundController = _sound.getBidController();
-            // _bidSoundController.play();
+            _bidSoundController.play();
           }
           if (res['close'] == true) {
             if (res['user_id'] == userid) {
               // win
-
+              _panggilan = 'Selamat Anda Menang Unit ini';
             }
             else {
               // lose
+              _panggilan = 'Unit Terjual ke NPL ' + res['npl'];
             }
           }
 
@@ -257,15 +260,12 @@ class _LiveBidState extends State<LiveBid>{
       child: ButtonTheme(
         minWidth: 200.0,
         child: MaterialButton(
-          onPressed: () {
+          onPressed: () async{
             if (this._enableBid == false) {
               Toast.show('Status Anda Tidak Aktif', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
             }
             else if (this._selectedNpl == '') {
               Toast.show('Anda Belom pilih NPL/ NPL tidak ada', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
-            }
-            else if (_panggilan == '2') {
-              // Toast.show('No Lot sudah panggilan ke 2, Harap tunggu untuk bid lainnya', context)
             }
             else {
               final data = {
@@ -276,23 +276,22 @@ class _LiveBidState extends State<LiveBid>{
                 "no_lot": _param['NoLot'],
               };
 
-              _bidRepo.live(data).then((value) {
-                bool status = value.getStatus();
-                if (status == true) {
-                  Map data = value.getData();
-                  setState((){
-                    _bidPrice = data['bid_price'].toString();
-                  });
+              final bidding = await _bidRepo.live(data);
+              bool status = bidding.getStatus();
+              if (status == true) {
+                List data = bidding.getData();
+                setState((){
+                  _bidPrice = data[0]['bid_price'].toString();
+                });
 
-                  final msgSuccess = "Unit ini berhasil anda bid";
-                  Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
-                }
-                else {
-                  Map errMessage = value.getMessage();
-                  String msg = errMessage['message'];
-                  Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
-                }
-              });
+                final msgSuccess = "Unit ini berhasil anda bid";
+                Toast.show(msgSuccess, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.green);
+              }
+              else {
+                Map errMessage = bidding.getMessage();
+                String msg = errMessage['message'];
+                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
+              }
             }
           },
           child: buttonText(),
