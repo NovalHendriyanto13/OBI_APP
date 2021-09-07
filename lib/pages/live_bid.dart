@@ -47,7 +47,8 @@ class _LiveBidState extends State<LiveBid>{
   String _selectedNpl = '';
   String _bidPrice = "0";
   bool _isSocket = false;
-  String _panggilan = "0";
+  String _panggilan = "Panggilan : 0";
+  String _panggilanCount = "0";
   String id = "";
   Timer timer;
   Map _param;
@@ -63,10 +64,6 @@ class _LiveBidState extends State<LiveBid>{
   ChewieAudioController _openSoundController;
   ChewieAudioController _winSoundController;
   ChewieAudioController _closeSoundController;
-  VideoPlayerController _bidPlayer;
-  VideoPlayerController _openPlayer;
-  VideoPlayerController _winPlayer;
-  VideoPlayerController _closePlayer;
   List _galleries;
   int userBid;
   bool isClose = false;
@@ -79,14 +76,6 @@ class _LiveBidState extends State<LiveBid>{
     _checkInternet.check(context);
     _refreshToken.run();
     _socket = _socketIo.connect();
-    // _soundBid = _sound.bidPlayerInit();
-    // _soundOpen = _sound.openPlayerInit();
-    // _soundWin = _sound.winPlayerInit();
-    // _soundClose = _sound.closePlayerInit();
-    // _bidSoundController = _sound.getBidController();
-    // _openSoundController = _sound.getOpenController();
-    // _winSoundController = _sound.getWinController();
-    // _closeSoundController = _sound.getCloseController();
     initBid();
     timer = Timer.periodic(Duration(seconds: 1), (timer) { updateBid(); });
   }
@@ -94,7 +83,7 @@ class _LiveBidState extends State<LiveBid>{
   @override
   void dispose() {
     timer.cancel();
-    // _sound.dispose();
+    _sound.dispose();
     super.dispose();
   }
 
@@ -125,18 +114,18 @@ class _LiveBidState extends State<LiveBid>{
         bool isBid = false;
         int userid = await _session.getInt('id');
 
-        print(res);
         if (res['is_new'] == 0) {
           if (_bidPrice != res['price'].toString()) {
             _bidPrice = res['price'].toString();
             _param = res['unit'];
             isBid = true;
           }
-          if (_panggilan != res['panggilan'].toString()) {
-            _panggilan = res['panggilan'].toString();
+          if (_panggilanCount != res['panggilan'].toString()) {
+            _panggilan = 'Panggilan : ' + res['panggilan'].toString();
             id = res['IdUnit'];
             _param = res['unit'];
             isBid = true;
+            _panggilanCount = res['panggilan'].toString();
           }
           if (_param['IdAuctions'] != res['unit']['IdAuctions']) {
             _isSocket = true;
@@ -146,17 +135,32 @@ class _LiveBidState extends State<LiveBid>{
           }
 
           if (isBid) {
-            // _soundBid = _sound.bidPlayerInit();
-            // _bidSoundController = _sound.getBidController();
-            // _bidSoundController.play();
+            if (_soundBid == null) {
+              _soundBid = _sound.bidPlayerInit();
+              _bidSoundController = _sound.getBidController();
+            }
+            _bidSoundController.play();    
           }
           if (res['close'] == true) {
             if (res['user_id'] == userid) {
               // win
-
+              _panggilan = 'Selamat Anda Menang Unit ini';
+              if (_soundWin == null) {
+                _soundWin = _sound.winPlayerInit();
+                _winSoundController = _sound.getWinController();
+              }
+              _winSoundController.play();
             }
             else {
               // lose
+              if (res['npl'] != "") {
+                _panggilan = 'Unit Terjual kepada NPL ' + res['npl'];
+              }
+              if (_soundClose == null) {
+                _soundClose = _sound.closePlayerInit();
+                _closeSoundController = _sound.getCloseController();
+              }
+              _closeSoundController.play();
             }
           }
 
@@ -167,20 +171,24 @@ class _LiveBidState extends State<LiveBid>{
             _bidPrice = _bidPrice;
             _panggilan = _panggilan;
             _galleries = res['galleries'];
+            _panggilanCount = _panggilanCount;
           });
         }
         else if (res['is_new'] == 1) {
            setState(() {
             _isSocket = true;
             _param = res['unit'];
-            _panggilan = "0";
+            _panggilan = "Panggilan : 0";
+            _panggilanCount = "0";
             _bidPrice = res['price'].toString();
             id = res['IdUnit'];
             _galleries = res['galleries'];
           });
-          // _soundOpen = _sound.openPlayerInit();
-          // _openSoundController = _sound.getOpenController();
-          // _openSoundController.play();
+          if (_soundOpen == null) {
+              _soundOpen = _sound.openPlayerInit();
+              _openSoundController = _sound.getOpenController();
+            }
+            _openSoundController.play();
         }
       });
   }
@@ -264,9 +272,6 @@ class _LiveBidState extends State<LiveBid>{
             else if (this._selectedNpl == '') {
               Toast.show('Anda Belom pilih NPL/ NPL tidak ada', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
             }
-            else if (_panggilan == '2') {
-              // Toast.show('No Lot sudah panggilan ke 2, Harap tunggu untuk bid lainnya', context)
-            }
             else {
               final data = {
                 "npl": this._selectedNpl,
@@ -279,9 +284,9 @@ class _LiveBidState extends State<LiveBid>{
               _bidRepo.live(data).then((value) {
                 bool status = value.getStatus();
                 if (status == true) {
-                  Map data = value.getData();
+                  List data = value.getData();
                   setState((){
-                    _bidPrice = data['bid_price'].toString();
+                    _bidPrice = data[0]['bid_price'].toString();
                   });
 
                   final msgSuccess = "Unit ini berhasil anda bid";
@@ -425,7 +430,6 @@ class _LiveBidState extends State<LiveBid>{
                         text: TextSpan(
                           style: TextStyle(color: Colors.black),
                           children: [
-                            TextSpan(text: ' Panggilan '),
                             TextSpan(
                               text: _panggilan,
                               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),

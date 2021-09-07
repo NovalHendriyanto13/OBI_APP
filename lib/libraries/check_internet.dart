@@ -14,6 +14,7 @@ class CheckInternet {
       print(err);
       return false;
     }
+    return false;
   }
 
   check(BuildContext context) async {
