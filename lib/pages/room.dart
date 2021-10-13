@@ -86,7 +86,6 @@ class _RoomState extends State<Room> with SingleTickerProviderStateMixin{
       // }
       // else {
         data['IdUnit'] = '0';
-        print(data);
         Navigator.push(context, MaterialPageRoute(builder: (context) => LiveBid(data)));
       // }
     }

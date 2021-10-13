@@ -12,7 +12,6 @@ class RefreshToken {
     final _now = DateTime.now();
     final _nowDt = DateFormat('yyyy-MM-dd hh:mm').format(_now);
     final _validTokenTime = await this._session.getString('valid_token');
-    final _expireIn = await this._session.getInt('expireIn');
 
     final _d1 = DateTime.parse(_nowDt);
     final _d2 = DateTime.parse(_validTokenTime);

@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:flutter_countdown_timer/index.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter/material.dart';
 import 'package:chewie_audio/chewie_audio.dart';
-import 'package:video_player/video_player.dart';
 import 'package:toast/toast.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:obi_mobile/libraries/drawer_menu.dart';
@@ -14,12 +12,11 @@ import 'package:obi_mobile/libraries/refresh_token.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/libraries/session.dart';
 import 'package:obi_mobile/libraries/sound.dart';
-import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/models/m_npl.dart';
-import 'package:obi_mobile/repository/unit_repo.dart';
+import 'package:obi_mobile/models/m_general.dart';
 import 'package:obi_mobile/repository/bid_repo.dart';
 import 'package:obi_mobile/repository/npl_repo.dart';
-import 'package:obi_mobile/repository/auction_repo.dart';
+import 'package:obi_mobile/repository/general_repo.dart';
 import 'package:obi_mobile/libraries/socket_io.dart';
 
 class LiveBid extends StatefulWidget {
@@ -37,17 +34,16 @@ class _LiveBidState extends State<LiveBid>{
   DrawerMenu _drawerMenu = DrawerMenu();
   RefreshToken _refreshToken = RefreshToken();
   CheckInternet _checkInternet = CheckInternet();
-  UnitRepo _unitRepo = UnitRepo();
   BidRepo _bidRepo = BidRepo();
   NplRepo _nplRepo = NplRepo();
-  AuctionRepo _auctionRepo = AuctionRepo();
-  Future<M_Unit> _dataUnit;
+  GeneralRepo _generalRepo = GeneralRepo();
   int _process = 0;
   bool _enableBid = false;
   String _selectedNpl = '';
   String _bidPrice = "0";
   bool _isSocket = false;
   String _panggilan = "Panggilan : 0";
+  String _panggilanCount = "0";
   String id = "";
   Timer timer;
   Map _param;
@@ -63,10 +59,6 @@ class _LiveBidState extends State<LiveBid>{
   ChewieAudioController _openSoundController;
   ChewieAudioController _winSoundController;
   ChewieAudioController _closeSoundController;
-  VideoPlayerController _bidPlayer;
-  VideoPlayerController _openPlayer;
-  VideoPlayerController _winPlayer;
-  VideoPlayerController _closePlayer;
   List _galleries;
   int userBid;
   bool isClose = false;
@@ -79,14 +71,6 @@ class _LiveBidState extends State<LiveBid>{
     _checkInternet.check(context);
     _refreshToken.run();
     _socket = _socketIo.connect();
-    // _soundBid = _sound.bidPlayerInit();
-    // _soundOpen = _sound.openPlayerInit();
-    // _soundWin = _sound.winPlayerInit();
-    // _soundClose = _sound.closePlayerInit();
-    _bidSoundController = _sound.getBidController();
-    _openSoundController = _sound.getOpenController();
-    _winSoundController = _sound.getWinController();
-    _closeSoundController = _sound.getCloseController();
     initBid();
     timer = Timer.periodic(Duration(seconds: 1), (timer) { updateBid(); });
   }
@@ -109,7 +93,6 @@ class _LiveBidState extends State<LiveBid>{
   }
 
   updateBid() async{
-
     if (_param != null) {
       final paramLastBid = {
         'auction_id': _param['IdAuctions'],
@@ -124,19 +107,19 @@ class _LiveBidState extends State<LiveBid>{
     _socket.on('getLastLive', (res) async {
         bool isBid = false;
         int userid = await _session.getInt('id');
-
-        print(res);
+print(res);
         if (res['is_new'] == 0) {
           if (_bidPrice != res['price'].toString()) {
             _bidPrice = res['price'].toString();
             _param = res['unit'];
             isBid = true;
           }
-          if (_panggilan != res['panggilan'].toString()) {
+          if (_panggilanCount != res['panggilan'].toString()) {
             _panggilan = 'Panggilan : ' + res['panggilan'].toString();
             id = res['IdUnit'];
             _param = res['unit'];
             isBid = true;
+            _panggilanCount = res['panggilan'].toString();
           }
           if (_param['IdAuctions'] != res['unit']['IdAuctions']) {
             _isSocket = true;
@@ -148,18 +131,32 @@ class _LiveBidState extends State<LiveBid>{
           if (isBid) {
             if (_soundBid == null) {
               _soundBid = _sound.bidPlayerInit();
+              _bidSoundController = _sound.getBidController();
             }
-            // _bidSoundController = _sound.getBidController();
-            _bidSoundController.play();
+            _bidSoundController.play();    
           }
           if (res['close'] == true) {
             if (res['user_id'] == userid) {
               // win
               _panggilan = 'Selamat Anda Menang Unit ini';
+              if (_soundWin == null) {
+                _soundWin = _sound.winPlayerInit();
+                _winSoundController = _sound.getWinController();
+              }
+              _winSoundController.play();
             }
             else {
               // lose
-              _panggilan = 'Unit Terjual ke NPL ' + res['npl'];
+              if (res['npl'] != "") {
+                _panggilan = 'Unit Terjual kepada NPL ' + res['npl'];
+              } else {
+                _panggilan = 'Unit Di Tutup';
+              }
+              if (_soundClose == null) {
+                _soundClose = _sound.closePlayerInit();
+                _closeSoundController = _sound.getCloseController();
+              }
+              _closeSoundController.play();
             }
           }
 
@@ -170,20 +167,24 @@ class _LiveBidState extends State<LiveBid>{
             _bidPrice = _bidPrice;
             _panggilan = _panggilan;
             _galleries = res['galleries'];
+            _panggilanCount = _panggilanCount;
           });
         }
         else if (res['is_new'] == 1) {
            setState(() {
             _isSocket = true;
             _param = res['unit'];
-            _panggilan = "0";
+            _panggilan = "Panggilan : 0";
+            _panggilanCount = "0";
             _bidPrice = res['price'].toString();
             id = res['IdUnit'];
             _galleries = res['galleries'];
           });
-          // _soundOpen = _sound.openPlayerInit();
-          // _openSoundController = _sound.getOpenController();
-          // _openSoundController.play();
+          if (_soundOpen == null) {
+              _soundOpen = _sound.openPlayerInit();
+              _openSoundController = _sound.getOpenController();
+            }
+            _openSoundController.play();
         }
       });
   }
@@ -309,37 +310,56 @@ class _LiveBidState extends State<LiveBid>{
       }
     }
 
+    void onEnd() {
+    }
+
+    final countdownLive = FutureBuilder<M_General>(
+      future: _generalRepo.getServerTime(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          Map _serverTime = snapshot.data.getData();
+          String _date = _serverTime["date"];
+          String _time = _serverTime["time"];
+          final _serverDate = DateTime.parse(_date + ' ' + _time);
+
+          String _auctionStartTime = _param['r_TglAuctions'] + ' ' + _param['StartTime'];
+          final _auctionStartDate = DateTime.parse(_auctionStartTime);
+          final diffStart = _auctionStartDate.difference(_serverDate).inSeconds;
+
+          int startTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffStart;
+
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('Auction Belum Di Buka', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                CountdownTimer(
+                  endTime: startTime,
+                  onEnd: onEnd,
+                  widgetBuilder: (_, CurrentRemainingTime time) {
+                    print(time);
+                    if (time != null) {
+                      String days = time.days != null ? time.days.toString() + ' Days, ' : '';
+                      String hours = time.hours != null ? time.hours.toString(): '00';
+                      String min = time.min != null ? time.min.toString(): '00';
+                      String sec = time.sec != null ? time.sec.toString(): '00';
+                      return Text("Open In : " + days + hours + ':' + min + ':' + sec, style: TextStyle(fontSize: 15.0),);
+                    } else {
+                      return Text(' Sedang Menunggu ... ');
+                    }
+                  },
+                ),
+              ])
+          );
+        }
+        return Text('-');
+      }
+    );
+
     Widget body() {
       if (_param['IdUnit'].toString() == '0') {
-        final _now = DateTime.now();
-        final _nowDt = DateFormat('yyyy-MM-dd HH:mm').format(_now);
-        String _auctionStartTime = _param['r_TglAuctions'] + ' ' + _param['StartTime'];
-        final _d1 = DateTime.parse(_nowDt);
-        final _auctionStartDate = DateTime.parse(_auctionStartTime);
-        final diffStart = _auctionStartDate.difference(_d1).inSeconds;
-        int startTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffStart;
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text('Auction Belum Di Buka', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-              CountdownTimer(
-                endTime: startTime,
-                widgetBuilder: (_, CurrentRemainingTime time) {
-                  if (time != null) {
-                    String days = time.days != null ? time.days.toString() + ' Days, ' : '';
-                    String hours = time.hours != null ? time.hours.toString(): '00';
-                    String min = time.min != null ? time.min.toString(): '00';
-                    String sec = time.sec != null ? time.sec.toString(): '00';
-                    return Text("Open In : " + days + hours + ':' + min + ':' + sec, style: TextStyle(fontSize: 15.0),);
-                  } else {
-                    return Text(' ... ');
-                  }
-                },
-              ),
-            ])
-        );
+        return countdownLive;
       }
       else {
         if (_galleries == null) {
@@ -424,7 +444,6 @@ class _LiveBidState extends State<LiveBid>{
                         text: TextSpan(
                           style: TextStyle(color: Colors.black),
                           children: [
-                            TextSpan(text: ' Panggilan '),
                             TextSpan(
                               text: _panggilan,
                               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
