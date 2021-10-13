@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:obi_mobile/models/m_bid.dart';
+import 'package:obi_mobile/models/m_general.dart';
 import 'package:toast/toast.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:obi_mobile/models/m_npl.dart';
@@ -10,6 +11,7 @@ import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/pages/live_bid.dart';
 import 'package:obi_mobile/repository/bid_repo.dart';
 import 'package:obi_mobile/repository/npl_repo.dart';
+import 'package:obi_mobile/repository/general_repo.dart';
 
 class Bid extends StatelessWidget {
   final Map data;
@@ -18,6 +20,7 @@ class Bid extends StatelessWidget {
   String _selectedNpl = '';
   BidRepo _bidRepo = BidRepo();
   NplRepo _nplRepo = NplRepo();
+  GeneralRepo _generalRepo = GeneralRepo();
   String _lastPrice = '0';
   bool expiredBid = true;
   String _strOpen = 'Open In ';
@@ -28,20 +31,99 @@ class Bid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextEditingController _bid = TextEditingController();
-    final _now = DateTime.now();
-    final _nowDt = DateFormat('yyyy-MM-dd HH:mm').format(_now);
-    String _auctionDateTime = this.data['TglAuctions'] + ' ' + this.data['EndTime'];
-    String _auctionStartTime = this.data['TglAuctions'] + ' ' + this.data['StartTime'];
-    final _d1 = DateTime.parse(_nowDt);
-    final _auctionEndDate = DateTime.parse(_auctionDateTime);
-    final _auctionStartDate = DateTime.parse(_auctionStartTime);
-    final diffEnd = _auctionEndDate.difference(_d1).inSeconds;
-    final diffStart = _auctionStartDate.difference(_d1).inSeconds;
-    //open auction
-    if (diffStart <= 0 && diffEnd > 0) {
-      this.expiredBid = false;
-      _strOpen = 'Closed In ';
+    // final _now = DateTime.now();
+    // final _nowDt = DateFormat('yyyy-MM-dd HH:mm').format(_now);
+
+    void onEnd() {
+      this.expiredBid = true;
     }
+
+    final countdownSubmit = FutureBuilder<M_General>(
+      future: _generalRepo.getServerTime(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          Map _serverTime = snapshot.data.getData();
+          String _date = _serverTime["date"];
+          String _time = _serverTime["time"];
+          final _serverDate = DateTime.parse(_date + ' ' + _time);
+          String _auctionDateTime = this.data['TglAuctions'] + ' ' + this.data['EndTime'];
+          String _auctionStartTime = this.data['TglAuctions'] + ' ' + this.data['StartTime'];
+          final _auctionEndDate = DateTime.parse(_auctionDateTime);
+          final _auctionStartDate = DateTime.parse(_auctionStartTime);
+
+          final diffEnd = _auctionEndDate.difference(_serverDate).inSeconds;
+          final diffStart = _auctionStartDate.difference(_serverDate).inSeconds;
+          int endTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffStart;
+          //open auction
+          if (diffStart <= 0 && diffEnd > 0) {
+            this.expiredBid = false;
+            _strOpen = 'Closed In ';
+            endTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffEnd;
+          }
+
+          return CountdownTimer(
+              endTime: endTime,
+              onEnd: onEnd,
+              widgetBuilder: (_, CurrentRemainingTime time) {
+                if (time != null) {
+                  String days = time.days != null ? time.days.toString() + ' Days, ' : '';
+                  String hours = time.hours != null ? time.hours.toString(): '00';
+                  String min = time.min != null ? time.min.toString(): '00';
+                  String sec = time.sec != null ? time.sec.toString(): '00';
+                  return Text(_strOpen + days + hours + ':' + min + ':' + sec);
+                } else {
+                  return Text('Auction sudah di tutup');
+                }
+              },
+            );
+        }
+        return Text('');
+      }
+    );
+
+    final countdownLive = FutureBuilder<M_General>(
+      future: _generalRepo.getServerTime(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          Map _serverTime = snapshot.data.getData();
+          String _date = _serverTime["date"];
+          String _time = _serverTime["time"];
+          final _serverDate = DateTime.parse(_date + ' ' + _time);
+
+          String _auctionDateTime = this.data['TglAuctions'] + ' ' + this.data['EndTime'];
+          String _auctionStartTime = this.data['TglAuctions'] + ' ' + this.data['StartTime'];
+          final _auctionEndDate = DateTime.parse(_auctionDateTime);
+          final _auctionStartDate = DateTime.parse(_auctionStartTime);
+          final diffEnd = _auctionEndDate.difference(_serverDate).inSeconds;
+          final diffStart = _auctionStartDate.difference(_serverDate).inSeconds;
+          //open auction
+          if (diffStart <= 0 && diffEnd > 0) {
+            this.expiredBid = false;
+            _strOpen = 'Closed In ';
+          }
+
+          int startTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffStart;
+
+          return CountdownTimer(
+            endTime: startTime,
+            onEnd: onEnd,
+            textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+            widgetBuilder: (_, CurrentRemainingTime time) {
+              if (time != null) {
+                String days = time.days != null ? time.days.toString() + ' Days, ' : '';
+                String hours = time.hours != null ? time.hours.toString(): '00';
+                String min = time.min != null ? time.min.toString(): '00';
+                String sec = time.sec != null ? time.sec.toString(): '00';
+                return Text(_strOpen + days + hours + ':' + min + ':' + sec);
+              } else {
+                return Text('Auction Sedang Berlangsung');
+              }
+            },
+          );
+        }
+        return Text('');
+      }
+    );
 
     final carouselSlider = FutureBuilder<M_Unit>(
       future: this.detail,
@@ -236,11 +318,6 @@ class Bid extends StatelessWidget {
       ),
     );
 
-    int endTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffEnd;
-    int startTime = DateTime.now().millisecondsSinceEpoch + 1000 * diffStart;
-    void onEnd() {
-      this.expiredBid = true;
-    }
     Widget bidPage(){
       if (this.data['Online'].toString().trim() == 'floor') {
         this.expiredBid = false;
@@ -252,22 +329,7 @@ class Bid extends StatelessWidget {
               Text('Lelang Akan dimulai pada',
                 style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 24.0),
               ),
-              CountdownTimer(
-                endTime: startTime,
-                onEnd: onEnd,
-                textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
-                widgetBuilder: (_, CurrentRemainingTime time) {
-                  if (time != null) {
-                    String days = time.days != null ? time.days.toString() + ' Days, ' : '';
-                    String hours = time.hours != null ? time.hours.toString(): '00';
-                    String min = time.min != null ? time.min.toString(): '00';
-                    String sec = time.sec != null ? time.sec.toString(): '00';
-                    return Text(_strOpen + days + hours + ':' + min + ':' + sec);
-                  } else {
-                    return Text('Auction Sedang Berlangsung');
-                  }
-                },
-              ),
+              countdownLive,
               TextButton(
                 child: Text(
                   'Ikut Live Auction Sekarang', 
@@ -312,21 +374,7 @@ class Bid extends StatelessWidget {
                   subtitle: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      CountdownTimer(
-                        endTime: endTime,
-                        onEnd: onEnd,
-                        widgetBuilder: (_, CurrentRemainingTime time) {
-                          if (time != null) {
-                            String days = time.days != null ? time.days.toString() + ' Days, ' : '';
-                            String hours = time.hours != null ? time.hours.toString(): '00';
-                            String min = time.min != null ? time.min.toString(): '00';
-                            String sec = time.sec != null ? time.sec.toString(): '00';
-                            return Text(_strOpen + days + hours + ':' + min + ':' + sec);
-                          } else {
-                            return Text('Auction sudah di tutup');
-                          }
-                        },
-                      ),
+                      countdownSubmit,
                       SizedBox(height: 10.0),
                       Text('Harga Penawaran: ' + _lastPrice),
                       SizedBox(height: 10.0),
