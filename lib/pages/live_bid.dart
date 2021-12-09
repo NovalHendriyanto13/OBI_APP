@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:flutter_countdown_timer/index.dart';
-import 'package:vibration/vibration.dart';
 import 'package:flutter/material.dart';
 import 'package:chewie_audio/chewie_audio.dart';
 import 'package:toast/toast.dart';
@@ -15,6 +13,7 @@ import 'package:obi_mobile/libraries/session.dart';
 import 'package:obi_mobile/libraries/sound.dart';
 import 'package:obi_mobile/models/m_npl.dart';
 import 'package:obi_mobile/models/m_general.dart';
+import 'package:obi_mobile/repository/auction_repo.dart';
 import 'package:obi_mobile/repository/bid_repo.dart';
 import 'package:obi_mobile/repository/npl_repo.dart';
 import 'package:obi_mobile/repository/general_repo.dart';
@@ -38,13 +37,12 @@ class _LiveBidState extends State<LiveBid>{
   BidRepo _bidRepo = BidRepo();
   NplRepo _nplRepo = NplRepo();
   GeneralRepo _generalRepo = GeneralRepo();
+  AuctionRepo _auctionRepo = AuctionRepo();
   int _process = 0;
   bool _enableBid = false;
   String _selectedNpl = '';
-  String _bidPrice = "0";
-  bool _isSocket = false;
-  String _panggilan = "Panggilan : 0";
-  String _panggilanCount = "0";
+  String _bidPrice = '0';
+  String _panggilan;
   String id = "";
   Timer timer;
   Map _param;
@@ -64,6 +62,7 @@ class _LiveBidState extends State<LiveBid>{
   int userBid;
   bool isClose = false;
   bool isWin = false;
+  bool _isOpen;
 
   @override
   void initState() {
@@ -72,128 +71,118 @@ class _LiveBidState extends State<LiveBid>{
     _checkInternet.check(context);
     _refreshToken.run();
     _socket = _socketIo.connect();
+    _isOpen = false;
     initBid();
-    timer = Timer.periodic(Duration(seconds: 1), (timer) { updateBid(); });
+    latestBid();
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   @override
   void dispose() {
-    timer.cancel();
     _sound.dispose();
     super.dispose();
   }
 
-  initBid() async{
-    if (_param != null) {
-      final paramInitBid = {
-        'auction_id': _param['IdAuctions'],
-      };
-      _socket.emit('initLive', paramInitBid);
-      getLastBid();
+  initBid() async {
+    final String auctionId = _param['IdAuctions'];
+    final lastUnit = await _auctionRepo.liveUnit(auctionId);
+    final lastUnitData = lastUnit.getData();
+    if (lastUnitData.isNotEmpty) {
+      setState(() {
+        _isOpen = true;
+        _param = lastUnitData;
+        _param['IdAuctions'] = _param['auction_id'];
+        _panggilan = 'Panggilan: ' + _param['panggilan'].toString();
+      });
     }
   }
 
-  updateBid() async{
-    if (_param != null) {
-      final paramLastBid = {
-        'auction_id': _param['IdAuctions'],
-        'unit_id': _param['IdUnit'] 
-      };
-      _socket.emit('setLastLive', paramLastBid);
-      getLastBid();
-    }
-  }
-
-  getLastBid() {
-    _socket.on('getLastLive', (res) async {
+  latestBid() {
+    String auctionId = _param['IdAuctions'];
+    final String socketName = 'setBid/' + auctionId;
+    
+    _socket.on(socketName, (res) async {
         bool isBid = false;
         int userid = await _session.getInt('id');
-print(res);
-        if (res['is_new'] == 0) {
-          if (_bidPrice != res['price'].toString()) {
-            _bidPrice = res['price'].toString();
-            _param = res['unit'];
+        String type = '';
+        String panggilan = 'Panggilan: ' + res['data']['panggilan'].toString();
+
+        if (res['data']['new'] == 0) {
+          if (_bidPrice != '0' && _bidPrice != res['data']['price']) {
             isBid = true;
           }
-          if (_panggilanCount != res['panggilan'].toString()) {
-            _panggilan = 'Panggilan : ' + res['panggilan'].toString();
-            id = res['IdUnit'];
-            _param = res['unit'];
-            isBid = true;
-            _panggilanCount = res['panggilan'].toString();
-          }
-          if (_param['IdAuctions'] != res['unit']['IdAuctions']) {
-            _isSocket = true;
-            _param = res['unit'];
-            id = res['IdUnit'];
+          if (_param['panggilan'] != res['data']['panggilan']) {
+            panggilan = 'Panggilan: ' + res['data']['panggilan'].toString();
             isBid = true;
           }
 
-          if (isBid) {
-            if (_soundBid == null) {
-              _soundBid = _sound.bidPlayerInit();
-              _bidSoundController = _sound.getBidController();
-            }
-            _bidSoundController.play();    
+          if (isBid == true) { // sound bid play
+            type = 'bid';
+            isBid = false;
           }
-          if (res['close'] == true) {
-            if (res['user_id'] == userid) {
+
+          if (res['data']['close'] == true) {
+            if (res['data']['user_id'] == userid) {
               // win
-              _panggilan = 'Selamat Anda Menang Unit ini';
-              if (_soundWin == null) {
-                _soundWin = _sound.winPlayerInit();
-                _winSoundController = _sound.getWinController();
-              }
-              _winSoundController.play();
+              panggilan = 'Selamat Anda Menang Unit ini';
+              type = 'win'; 
             }
             else {
-              print(res);
+              if (_closeSoundController != null) {
+                _closeSoundController = null;
+              }
               // lose
-              if (res['npl'] != "") {
-                _panggilan = 'Unit Terjual kepada NPL ' + res['npl'];
+              if (res['data']['npl'] == null) {
+                panggilan = 'Unit Tidak Terjual';
               } else {
-                _panggilan = 'Unit Di Tutup';
+                panggilan = 'Unit Terjual kepada NPL ' + res['data']['npl'];
               }
-              if (_soundClose == null) {
-                _soundClose = _sound.closePlayerInit();
-                _closeSoundController = _sound.getCloseController();
-              }
-              _closeSoundController.play();
+              type = 'close';
             }
           }
+        }
+        else if (res['data']['new'] == 1) { // new unit in auction
+          type = 'open';
+        }
 
-          setState(() {
-            _isSocket = _isSocket;
-            _param = _param;
-            id = id;
-            _bidPrice = _bidPrice;
-            _panggilan = _panggilan;
-            _galleries = res['galleries'];
-            _panggilanCount = _panggilanCount;
-          });
-        }
-        else if (res['is_new'] == 1) {
-           setState(() {
-            _isSocket = true;
-            _param = res['unit'];
-            _panggilan = "Panggilan : 0";
-            _panggilanCount = "0";
-            _bidPrice = res['price'].toString();
-            id = res['IdUnit'];
-            _galleries = res['galleries'];
-          });
-          if (_soundOpen == null) {
-              _soundOpen = _sound.openPlayerInit();
-              _openSoundController = _sound.getOpenController();
-            }
-            _openSoundController.play();
-        }
+        setState(() {
+          _param = res['data'];
+          _param['IdAuctions'] = _param['auction_id'];
+          _isOpen = true;
+          _panggilan = panggilan;
+        });
+
+        getSound(type);
       });
   }
 
-  void _vibrate() async{
-    if (await Vibration.hasVibrator()) {
-        Vibration.vibrate(duration: 500);
+  void getSound(type) {
+    if (type == 'close') {
+      if (_closeSoundController != null) _closeSoundController.dispose();
+      _soundClose = _sound.closePlayerInit();
+      _closeSoundController = _sound.getCloseController();
+      _closeSoundController.play();
+    } else if (type == 'win') {
+      if (_winSoundController != null) _winSoundController.dispose();
+      _soundWin = _sound.winPlayerInit();
+      _winSoundController = _sound.getWinController();
+      _winSoundController.play();
+    } else if (type == 'bid') {
+      if (_bidSoundController != null) _bidSoundController.dispose();
+      _soundBid = _sound.bidPlayerInit();
+      _bidSoundController = _sound.getBidController();
+      _bidSoundController.play();
+    } else if (type == 'open') {
+      if (_openSoundController != null) _openSoundController.dispose();
+      _soundOpen = _sound.openPlayerInit();
+      _openSoundController = _sound.getOpenController();
+      _openSoundController.play();
     }
   }
 
@@ -201,7 +190,7 @@ print(res);
   Widget build(BuildContext context) {
     Drawer _menu = _drawerMenu.initialize(context, LiveBid.tag);
 
-    final _type = _param['Jenis'] != null ? _param['Jenis'] : 'mobil';
+    final _type = 'mobil';
 
     final params = {
       "auction_id": _param['IdAuctions'],
@@ -303,18 +292,6 @@ print(res);
         ),
       )
     );
-    
-    String price() {
-      if (_bidPrice == '0') {
-        return 'Rp.' + _param['HargaLimit'].toString();
-      }
-      else {
-        return 'Rp.' + _bidPrice;
-      }
-    }
-
-    void onEnd() {
-    }
 
     final countdownLive = FutureBuilder<M_General>(
       future: _generalRepo.getServerTime(),
@@ -339,9 +316,7 @@ print(res);
                 Text('Auction Belum Di Buka', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
                 CountdownTimer(
                   endTime: startTime,
-                  onEnd: onEnd,
                   widgetBuilder: (_, CurrentRemainingTime time) {
-                    print(time);
                     if (time != null) {
                       String days = time.days != null ? time.days.toString() + ' Days, ' : '';
                       String hours = time.hours != null ? time.hours.toString(): '00';
@@ -361,12 +336,13 @@ print(res);
     );
 
     Widget body() {
-      if (_param['IdUnit'].toString() == '0') {
+      if (_isOpen == false) {
         return countdownLive;
       }
       else {
-        if (_galleries == null) {
-          _galleries = [{"image": _param["image"]}];
+        _galleries = _param['galleries'];
+        if (_galleries.length == 0) {
+          _galleries = [{"image": _param['unit']["image"]}];
         }
         final carouselSlider = CarouselSlider(
           items: _galleries.map<Widget>((i) {
@@ -394,6 +370,8 @@ print(res);
             scrollDirection: Axis.horizontal,
           ),
         );
+
+        final Map unitInfo = _param['unit'];
         return Stack(
           alignment: Alignment.bottomCenter,
           children: [
@@ -401,20 +379,19 @@ print(res);
               padding: EdgeInsets.all(10.0),
               children: [
                 carouselSlider,
-                // Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id').format(_param['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-                Text('Harga Dasar : Rp.' + _param['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                Text('Harga Dasar : Rp.' + unitInfo['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
                 SizedBox(height: 15.0),
-                Text('LOT : ' + _param['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
+                Text('LOT : ' + unitInfo['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
                 SizedBox(height: 8.0),
-                Text(_param['Merk'] + ' ' + _param['Tipe'] + ' ' + _param['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(unitInfo['Merk'] + ' ' + unitInfo['Tipe'] + ' ' + unitInfo['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 8.0),
                 Row(
                   children: [
-                    Text('Eks : ' + _param['GradeExterior']),
+                    Text('Eks : ' + unitInfo['GradeExterior']),
                     Text(' | '),
-                    Text('Int : ' + _param['GradeInterior']),
+                    Text('Int : ' + unitInfo['GradeInterior']),
                     Text(' | '),
-                    Text('Msn :' + _param['GradeMesin'])
+                    Text('Msn :' + unitInfo['GradeMesin'])
                   ],
                 ),
                 SizedBox(height: 8.0),
@@ -424,9 +401,9 @@ print(res);
                 SizedBox(height: 8.0),
                 Text('No Mesin : '),
                 SizedBox(height: 8.0),
-                Text('STNK : ' + _param['TglBerlakuSTNK'].toString()),
+                Text('STNK : ' + unitInfo['TglBerlakuSTNK'].toString()),
                 SizedBox(height: 8.0),
-                Text('Nota Pajak : ' + _param['TglBerlakuPajak'].toString()),
+                Text('Nota Pajak : ' + unitInfo['TglBerlakuPajak'].toString()),
                 SizedBox(height: 8.0),
                 Text('BPKB : '),
                 SizedBox(height: 8.0),
@@ -464,7 +441,7 @@ print(res);
                           children: [
                             TextSpan(text: 'Harga Penawaran '),
                             TextSpan(
-                              text: price(),
+                              text: 'Rp.' + _param['price'],
                               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
                             ),
                           ] 

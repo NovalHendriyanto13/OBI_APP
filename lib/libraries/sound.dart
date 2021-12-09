@@ -88,6 +88,8 @@ class Sound {
   void dispose(){
     if (_bidPlayer != null) _bidPlayer.dispose();
     if (_openPlayer != null) _openPlayer.dispose();
+    if (_winPlayer != null) _winPlayer.dispose();
+    if (_closePlayer != null) _closePlayer.dispose();
     if (_bidController != null) _bidController.dispose();
     if (_openController != null) _openController.dispose();
     if (_closeController != null) _closeController.dispose();
