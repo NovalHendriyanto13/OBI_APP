@@ -168,6 +168,12 @@ class _AuctionDetailState extends State<AuctionDetail> with SingleTickerProvider
               itemCount: _dataDetail.length == 0 ? 1 : _dataDetail.length,
               itemBuilder: (BuildContext context, int index) {
                 List _list = _dataDetail;
+                String stnk = 'T/A';
+                String pajak = 'T/A';
+                if (_list.length > 0 ) {
+                  stnk = null != _list[index]['TglBerlakuSTNK'] ? _list[index]['TglBerlakuSTNK'].toString() : 'T/A';
+                  pajak = null != _list[index]['TglBerlakuPajak'] ? _list[index]['TglBerlakuPajak'].toString() : 'T/A';
+                }
                 return _list.length == 0 ? Center(child: Text('No Data Found')) : GestureDetector( 
                   child : Card(
                     clipBehavior: Clip.antiAlias,
@@ -230,8 +236,8 @@ class _AuctionDetailState extends State<AuctionDetail> with SingleTickerProvider
                                         ]
                                       ),
                                       Align(alignment: Alignment.centerLeft, child: Text('Warna : ' + _list[index]['Warna'].toString())),
-                                      Align(alignment: Alignment.centerLeft, child: Text('STNK : ' + _list[index]['TglBerlakuSTNK'].toString())),
-                                      Align(alignment: Alignment.centerLeft, child: Text('PAJAK : ' + _list[index]['TglBerlakuPajak'].toString())),
+                                      Align(alignment: Alignment.centerLeft, child: Text('STNK : ' + stnk)),
+                                      Align(alignment: Alignment.centerLeft, child: Text('PAJAK : ' + pajak)),
                                     ],
                                   )
                                 ),
