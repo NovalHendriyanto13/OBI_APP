@@ -298,9 +298,8 @@ class _BuyNplState extends State<BuyNpl> {
                 });
               }
               else {
-                Map errMessage = value.getMessage();
-                String msg = errMessage['message'];
-                Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.orange);
+                String errMessage = value.getStringMessage();
+                Toast.show(errMessage, context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
               }
 
               setState(() {

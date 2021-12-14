@@ -54,15 +54,18 @@ class _LiveBidState extends State<LiveBid>{
   Future<void> _soundOpen;
   Future<void> _soundWin;
   Future<void> _soundClose;
+  Future<void> _soundCall;
   ChewieAudioController _bidSoundController;
   ChewieAudioController _openSoundController;
   ChewieAudioController _winSoundController;
   ChewieAudioController _closeSoundController;
+  ChewieAudioController _callSoundController;
   List _galleries;
   int userBid;
   bool isClose = false;
   bool isWin = false;
   bool _isOpen;
+  bool _playSound;
 
   @override
   void initState() {
@@ -72,6 +75,7 @@ class _LiveBidState extends State<LiveBid>{
     _refreshToken.run();
     _socket = _socketIo.connect();
     _isOpen = false;
+    _playSound = false;
     initBid();
     latestBid();
   }
@@ -109,6 +113,7 @@ class _LiveBidState extends State<LiveBid>{
     
     _socket.on(socketName, (res) async {
         bool isBid = false;
+        bool isSound = false;
         int userid = await _session.getInt('id');
         String type = '';
         String panggilan = 'Panggilan: ' + res['data']['panggilan'].toString();
@@ -116,22 +121,25 @@ class _LiveBidState extends State<LiveBid>{
         if (res['data']['new'] == 0) {
           if (_bidPrice != '0' && _bidPrice != res['data']['price']) {
             isBid = true;
+            type = 'bid';
           }
           if (_param['panggilan'] != res['data']['panggilan']) {
             panggilan = 'Panggilan: ' + res['data']['panggilan'].toString();
             isBid = true;
+            type = 'call';
           }
 
           if (isBid == true) { // sound bid play
-            type = 'bid';
             isBid = false;
+            isSound = true;
           }
 
           if (res['data']['close'] == true) {
             if (res['data']['user_id'] == userid) {
               // win
               panggilan = 'Selamat Anda Menang Unit ini';
-              type = 'win'; 
+              type = 'win';
+              isSound = true;
             }
             else {
               // lose
@@ -141,11 +149,13 @@ class _LiveBidState extends State<LiveBid>{
                 panggilan = 'Unit Terjual kepada NPL ' + res['data']['npl'];
               }
               type = 'close';
+              isSound = true;
             }
           }
         }
         else if (res['data']['new'] == 1) { // new unit in auction
           type = 'open';
+          isSound = true;
         }
 
         setState(() {
@@ -153,6 +163,7 @@ class _LiveBidState extends State<LiveBid>{
           _param['IdAuctions'] = _param['auction_id'];
           _isOpen = true;
           _panggilan = panggilan;
+          _playSound = isSound;
         });
 
         getSound(type);
@@ -160,27 +171,39 @@ class _LiveBidState extends State<LiveBid>{
   }
 
   void getSound(type) {
-    if (type == 'close') {
-      if (_closeSoundController != null) _closeSoundController.dispose();
-      _soundClose = _sound.closePlayerInit();
-      _closeSoundController = _sound.getCloseController();
-      _closeSoundController.play();
-    } else if (type == 'win') {
-      if (_winSoundController != null) _winSoundController.dispose();
-      _soundWin = _sound.winPlayerInit();
-      _winSoundController = _sound.getWinController();
-      _winSoundController.play();
-    } else if (type == 'bid') {
-      if (_bidSoundController != null) _bidSoundController.dispose();
-      _soundBid = _sound.bidPlayerInit();
-      _bidSoundController = _sound.getBidController();
-      _bidSoundController.play();
-    } else if (type == 'open') {
-      if (_openSoundController != null) _openSoundController.dispose();
-      _soundOpen = _sound.openPlayerInit();
-      _openSoundController = _sound.getOpenController();
-      _openSoundController.play();
+    print(type);
+    if (_playSound == true) {
+      if (type == 'close') {
+        if (_closeSoundController != null) _closeSoundController.dispose();
+        _soundClose = _sound.closePlayerInit();
+        _closeSoundController = _sound.getCloseController();
+        _closeSoundController.play();
+      } else if (type == 'win') {
+        if (_winSoundController != null) _winSoundController.dispose();
+        _soundWin = _sound.winPlayerInit();
+        _winSoundController = _sound.getWinController();
+        _winSoundController.play();
+      } else if (type == 'bid') {
+        if (_bidSoundController != null) _bidSoundController.dispose();
+        _soundBid = _sound.bidPlayerInit();
+        _bidSoundController = _sound.getBidController();
+        _bidSoundController.play();
+      } else if (type == 'open') {
+        if (_openSoundController != null) _openSoundController.dispose();
+        _soundOpen = _sound.openPlayerInit();
+        _openSoundController = _sound.getOpenController();
+        _openSoundController.play();
+      } else if (type == 'call') {
+        if (_callSoundController != null) _callSoundController.dispose();
+        _soundCall = _sound.callPlayerInit();
+        _callSoundController = _sound.getCallController();
+        _callSoundController.play();
+      }
     }
+
+    setState(() {
+      _playSound = false;
+    });
   }
 
   @override
@@ -375,31 +398,31 @@ class _LiveBidState extends State<LiveBid>{
               padding: EdgeInsets.all(10.0),
               children: [
                 carouselSlider,
-                Text('Harga Dasar : Rp.' + unitInfo['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                Text('Harga Dasar : Rp.' + unitInfo['HargaLimit'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24.0)),
                 SizedBox(height: 15.0),
-                Text('LOT : ' + unitInfo['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
+                Text('LOT : ' + unitInfo['NoLot'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)) ,
                 SizedBox(height: 8.0),
-                Text(unitInfo['Merk'] + ' ' + unitInfo['Tipe'] + ' ' + unitInfo['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(unitInfo['Merk'].toString().toUpperCase() + ' ' + unitInfo['Tipe'] + ' ' + unitInfo['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0)),
                 SizedBox(height: 8.0),
                 Row(
                   children: [
-                    Text('Eks : ' + unitInfo['GradeExterior']),
+                    Text('Eks : ' + unitInfo['GradeExterior'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                     Text(' | '),
-                    Text('Int : ' + unitInfo['GradeInterior']),
+                    Text('Int : ' + unitInfo['GradeInterior'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                     Text(' | '),
-                    Text('Msn :' + unitInfo['GradeMesin'])
+                    Text('Msn :' + unitInfo['GradeMesin'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0))
                   ],
                 ),
                 SizedBox(height: 8.0),
-                Text('Kilometer : ' + unitInfo['Kilometer']),
+                Text('Kilometer : ' + unitInfo['Kilometer'].toString(), style: TextStyle(fontSize: 15.0)),
                 SizedBox(height: 8.0),
-                Text('Transmisi : ' + unitInfo['Transmisi']),
+                Text('Transmisi : ' + unitInfo['Transmisi'], style: TextStyle(fontSize: 15.0)),
                 SizedBox(height: 8.0),
-                Text('Tahun : ' + unitInfo['Tahun']),
+                Text('Tahun : ' + unitInfo['Tahun'], style: TextStyle(fontSize: 15.0)),
                 SizedBox(height: 8.0),
-                Text('STNK : ' + unitInfo['TglBerlakuSTNK']),
+                Text('STNK : ' + unitInfo['TglBerlakuSTNK'].toString(), style: TextStyle(fontSize: 15.0)),
                 SizedBox(height: 8.0),
-                Text('Nota Pajak : ' + unitInfo['TglBerlakuPajak']),
+                Text('Nota Pajak : ' + unitInfo['TglBerlakuPajak'].toString(), style: TextStyle(fontSize: 15.0)),
                 SizedBox(height: 8.0),
               ],
             ),
@@ -433,7 +456,7 @@ class _LiveBidState extends State<LiveBid>{
                           children: [
                             TextSpan(text: 'Harga Penawaran '),
                             TextSpan(
-                              text: 'Rp.' + _param['price'],
+                              text: 'Rp.' + _param['price'].toString(),
                               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
                             ),
                           ] 

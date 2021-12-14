@@ -42,4 +42,8 @@ class M_Npl {
     return this._body;
   }
 
+  String getStringMessage() {
+    return this._msg;
+  }
+
 }
