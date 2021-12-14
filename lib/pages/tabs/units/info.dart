@@ -53,22 +53,24 @@ class Info extends StatelessWidget {
     );
 
     final isSold = this.data['Status'] == 2 ? '( SOLD )' : '';
+    final String stnk = null != this.data['TglBerlakuSTNK'] ? this.data['TglBerlakuSTNK'].toString() : 'T/A';
+    final String pajak = null != this.data['TglBerlakuPajak'] ? this.data['TglBerlakuPajak'].toString() : 'T/A';
     return ListView(
       padding: EdgeInsets.all(10.0),
       children: [
         carouselSlider,
         Row(
           children: [
-            Expanded(child: Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(this.data['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0))),
+            Expanded(child: Text('Harga Dasar : ' + NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(this.data['HargaLimit']), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24.0))),
             Text(isSold,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17.0, color: Colors.red)),
           ],
         ),
         SizedBox(height: 15.0),
-        Text('LOT : ' + this.data['NoLot'], style: TextStyle(fontWeight: FontWeight.bold)) ,
+        Text('LOT : ' + this.data['NoLot'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)) ,
         SizedBox(height: 8.0),
-        Text(this.data['Merk'] + ' ' + this.data['Tipe'] + ' ' + this.data['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold)),
+        Text(this.data['Merk'].toString().toUpperCase() + ' ' + this.data['Tipe'] + ' ' + this.data['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0)),
         SizedBox(height: 8.0),
-        Text(this.data['NoPolisi']),
+        Text('NO Polisi: ' + this.data['NoPolisi']),
         SizedBox(height: 8.0),
         Row(
           children: [
@@ -80,19 +82,15 @@ class Info extends StatelessWidget {
           ],
         ),
         SizedBox(height: 8.0),
-        Text('Kilometer : '),
+        Text('Kilometer : ' + this.data['Kilometer'].toString(), style: TextStyle(fontSize: 15.0)),
         SizedBox(height: 8.0),
-        Text('No Rangka : '),
+        Text('Transmisi : ' + this.data['Transmisi'], style: TextStyle(fontSize: 15.0)),
         SizedBox(height: 8.0),
-        Text('No Mesin : '),
+        Text('Tahun : ' + this.data['Tahun'], style: TextStyle(fontSize: 15.0)),
         SizedBox(height: 8.0),
-        Text('STNK : ' + this.data['TglBerlakuSTNK'].toString()),
+        Text('STNK : ' + stnk, style: TextStyle(fontSize: 15.0)),
         SizedBox(height: 8.0),
-        Text('Nota Pajak : ' + this.data['TglBerlakuPajak'].toString()),
-        SizedBox(height: 8.0),
-        Text('BPKB : '),
-        SizedBox(height: 8.0),
-        Text('info : '),
+        Text('Nota Pajak : ' + pajak, style: TextStyle(fontSize: 15.0)),
         SizedBox(height: 8.0),
       ],
     );

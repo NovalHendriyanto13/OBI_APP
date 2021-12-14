@@ -119,15 +119,18 @@ class _LiveBidState extends State<LiveBid>{
         String panggilan = 'Panggilan: ' + res['data']['panggilan'].toString();
 
         if (res['data']['new'] == 0) {
-          if (_bidPrice != '0' && _bidPrice != res['data']['price']) {
-            isBid = true;
-            type = 'bid';
-          }
           if (_param['panggilan'] != res['data']['panggilan']) {
             panggilan = 'Panggilan: ' + res['data']['panggilan'].toString();
             isBid = true;
             type = 'call';
           }
+
+          if (_bidPrice != '0' && _bidPrice != res['data']['price'] && res['data']['panggilan'] == 0) {
+            isBid = true;
+            type = 'bid';
+          }
+
+          _bidPrice = res['data']['price'].toString();
 
           if (isBid == true) { // sound bid play
             isBid = false;
@@ -135,7 +138,7 @@ class _LiveBidState extends State<LiveBid>{
           }
 
           if (res['data']['close'] == true) {
-            if (res['data']['user_id'] == userid) {
+            if (res['data']['user_id'].toString() == userid.toString()) {
               // win
               panggilan = 'Selamat Anda Menang Unit ini';
               type = 'win';
@@ -171,7 +174,6 @@ class _LiveBidState extends State<LiveBid>{
   }
 
   void getSound(type) {
-    print(type);
     if (_playSound == true) {
       if (type == 'close') {
         if (_closeSoundController != null) _closeSoundController.dispose();
@@ -216,15 +218,18 @@ class _LiveBidState extends State<LiveBid>{
       "auction_id": _param['IdAuctions'],
       "type": _type,
     };
+
     final npl = FutureBuilder<M_Npl>(
       future: _nplRepo.activeNpl(params),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List _data = snapshot.data.getListData();
+          if (_data.length > 0) {
+            _selectedNpl = _data[0]['NPL'];
+          }
           return  DropdownButtonFormField(
             isExpanded: true,          
             items: _data.map((e) {
-              String v = e["NPL"].toString();
               return DropdownMenuItem(
                 child: Text(e["NPL"]),
                 value: e["NPL"], 
@@ -232,8 +237,9 @@ class _LiveBidState extends State<LiveBid>{
             }).toList(),
             hint: Text('Pilih NPL'),
             onChanged: (selected) {
-                this._selectedNpl = selected;
+              _selectedNpl = selected;
             },
+            value: _selectedNpl,
             decoration: InputDecoration(
               hintText: 'Pilih NPL',
               labelText: 'Pilih NPL',
@@ -283,17 +289,17 @@ class _LiveBidState extends State<LiveBid>{
               final data = {
                 "npl": this._selectedNpl,
                 "auction_id": _param['IdAuctions'],
-                "unit_id": _param['IdUnit'],
-                "type": _param['Jenis'],
-                "no_lot": _param['NoLot'],
+                "unit_id": _param['unit_id'],
+                "type": _param['unit']['Jenis'],
+                "no_lot": _param['unit']['NoLot'],
               };
 
               final bidding = await _bidRepo.live(data);
               bool status = bidding.getStatus();
               if (status == true) {
-                List data = bidding.getData();
+                Map data = bidding.getDataMap();
                 setState((){
-                  _bidPrice = data[0]['bid_price'].toString();
+                  _bidPrice = data['bid_price'].toString();
                 });
 
                 final msgSuccess = "Unit ini berhasil anda bid";
@@ -391,6 +397,8 @@ class _LiveBidState extends State<LiveBid>{
         );
 
         final Map unitInfo = _param['unit'];
+        final String stnk = null != unitInfo['TglBerlakuSTNK'] ? unitInfo['TglBerlakuSTNK'].toString() : 'T/A';
+        final String pajak = null != unitInfo['TglBerlakuPajak'] ? unitInfo['TglBerlakuPajak'].toString() : 'T/A';
         return Stack(
           alignment: Alignment.bottomCenter,
           children: [
@@ -403,6 +411,8 @@ class _LiveBidState extends State<LiveBid>{
                 Text('LOT : ' + unitInfo['NoLot'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)) ,
                 SizedBox(height: 8.0),
                 Text(unitInfo['Merk'].toString().toUpperCase() + ' ' + unitInfo['Tipe'] + ' ' + unitInfo['Transmisi'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0)),
+                SizedBox(height: 8.0),
+                Text('NO Polisi: ' + unitInfo['NoPolisi']),
                 SizedBox(height: 8.0),
                 Row(
                   children: [
@@ -420,9 +430,9 @@ class _LiveBidState extends State<LiveBid>{
                 SizedBox(height: 8.0),
                 Text('Tahun : ' + unitInfo['Tahun'], style: TextStyle(fontSize: 15.0)),
                 SizedBox(height: 8.0),
-                Text('STNK : ' + unitInfo['TglBerlakuSTNK'].toString(), style: TextStyle(fontSize: 15.0)),
+                Text('STNK : ' + stnk, style: TextStyle(fontSize: 15.0)),
                 SizedBox(height: 8.0),
-                Text('Nota Pajak : ' + unitInfo['TglBerlakuPajak'].toString(), style: TextStyle(fontSize: 15.0)),
+                Text('Nota Pajak : ' + pajak, style: TextStyle(fontSize: 15.0)),
                 SizedBox(height: 8.0),
               ],
             ),

@@ -5,7 +5,6 @@ import 'package:obi_mobile/libraries/check_internet.dart';
 import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/repository/unit_repo.dart';
 import 'package:obi_mobile/pages/tabs/units/info.dart' as info;
-import 'package:obi_mobile/pages/tabs/units/document.dart' as doc;
 import 'package:obi_mobile/pages/tabs/units/bid.dart' as bid;
 
 class Unit extends StatefulWidget {
@@ -26,7 +25,6 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
 
   List<Widget> _tabList = <Widget>[
     Tab(child: Text('Info Unit')),
-    Tab(child: Text('Dokumen')),
     Tab(child: Text('Lelang'))
   ];
 
@@ -73,7 +71,6 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
           controller: _tabController,
           children: [
             info.Info(data: param, detail: _dataUnit),
-            doc.Document(data: param, detail: _dataUnit),
             bid.Bid(data: param, detail: _dataUnit),
           ]
         )

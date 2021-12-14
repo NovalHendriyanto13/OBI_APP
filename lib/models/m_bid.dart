@@ -34,4 +34,8 @@ class M_Bid {
     return this._body;
   }
 
+  Map<String, dynamic> getDataMap() {
+    return this._body;
+  }
+
 }
