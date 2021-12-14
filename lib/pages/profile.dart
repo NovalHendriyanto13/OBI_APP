@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:obi_mobile/libraries/whatsapp.dart';
 import 'package:toast/toast.dart';
 import 'package:obi_mobile/models/m_user.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
@@ -223,17 +224,21 @@ class _ProfileState extends State<Profile> {
                 onPressed: () {
                   String uEmail = data['Email'].toString();
                   
-                  _userRepo.reqUpdate(uEmail).then((value) {
-                    bool status = value.getStatus();
-                    if (status == true) {
-                      Toast.show('Permintaan Ubah profile berhasil di kirim', context, duration: Toast.LENGTH_LONG , gravity: Toast.TOP);
-                    }
-                    else {
-                      Map errMessage = value.getMessage();
-                      String msg = errMessage['message'];
-                      Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.orange);
-                    }
-                  });
+                  // _userRepo.reqUpdate(uEmail).then((value) {
+                  //   bool status = value.getStatus();
+                  //   if (status == true) {
+                  //     Toast.show('Permintaan Ubah profile berhasil di kirim', context, duration: Toast.LENGTH_LONG , gravity: Toast.TOP);
+                  //   }
+                  //   else {
+                  //     Map errMessage = value.getMessage();
+                  //     String msg = errMessage['message'];
+                  //     Toast.show(msg, context, duration: Toast.LENGTH_LONG , gravity:  Toast.TOP, backgroundColor: Colors.orange);
+                  //   }
+                  // });
+                  String waMsg = "Permohonan Perubahan Data : Email : " + uEmail + " Sebutkkan Data yang diubah  menjadi :";
+                  Whatsapp wa = Whatsapp(context);
+                  wa.openWhatsapp(waMsg);
+                  
                 }
               );
 

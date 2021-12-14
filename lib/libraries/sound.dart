@@ -6,11 +6,13 @@ class Sound {
   VideoPlayerController _openPlayer;
   VideoPlayerController _winPlayer;
   VideoPlayerController _closePlayer;
+  VideoPlayerController _callPlayer;
 
   ChewieAudioController _bidController;
   ChewieAudioController _openController;
   ChewieAudioController _winController;
   ChewieAudioController _closeController;
+  ChewieAudioController _callController;
   ChewieAudioController _controller;
 
   Future<void> bidPlayerInit() async{
@@ -69,6 +71,20 @@ class Sound {
     return _controller;
   }
 
+  Future<void> callPlayerInit() async{
+    _callPlayer = VideoPlayerController.network(
+        'https://otobid.co.id/assets/media/notify.mp3');
+    await Future.wait([
+      _callPlayer.initialize(),
+    ]);
+    _callController = setController(_callPlayer);
+  }
+
+  ChewieAudioController getCallController() {
+    _controller = _callController;
+    return _controller;
+  }
+
   ChewieAudioController setController(VideoPlayerController player) {
     return ChewieAudioController(
       videoPlayerController: player,
@@ -88,8 +104,6 @@ class Sound {
   void dispose(){
     if (_bidPlayer != null) _bidPlayer.dispose();
     if (_openPlayer != null) _openPlayer.dispose();
-    if (_winPlayer != null) _winPlayer.dispose();
-    if (_closePlayer != null) _closePlayer.dispose();
     if (_bidController != null) _bidController.dispose();
     if (_openController != null) _openController.dispose();
     if (_closeController != null) _closeController.dispose();
