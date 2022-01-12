@@ -5,6 +5,8 @@ import 'package:obi_mobile/configs/config.dart' as config;
 import 'package:obi_mobile/models/m_bid.dart';
 import 'package:obi_mobile/libraries/session.dart';
 
+import '../models/m_bid.dart';
+
 class BidRepo {
   
   final String apiUrl = config.API_URL;
@@ -150,6 +152,30 @@ class BidRepo {
 
     final response = await http.post(
       Uri.http(apiUrl, 'cancel-bid'),
+      headers: header,
+      body: data
+    );
+
+    if (response.statusCode==200) {
+      return M_Bid.fromJson(jsonDecode(response.body));
+    }
+    else {
+      throw Exception('Connect to Api Failed');
+    }
+  }
+
+  Future<M_Bid> bidder(params) async {
+    Session _session = new Session();
+    String token = await _session.getString('token');
+
+    Map<String, String> header = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    };
+    final data = jsonEncode(params);
+
+    final response = await http.post(
+      Uri.http(apiUrl, 'history-auction-bid'),
       headers: header,
       body: data
     );

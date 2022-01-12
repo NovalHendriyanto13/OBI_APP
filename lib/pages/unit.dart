@@ -6,6 +6,7 @@ import 'package:obi_mobile/models/m_unit.dart';
 import 'package:obi_mobile/repository/unit_repo.dart';
 import 'package:obi_mobile/pages/tabs/units/info.dart' as info;
 import 'package:obi_mobile/pages/tabs/units/bid.dart' as bid;
+import 'package:obi_mobile/pages/tabs/units/bidder.dart' as bidder;
 
 class Unit extends StatefulWidget {
   static String tag = 'unit-page';
@@ -14,7 +15,7 @@ class Unit extends StatefulWidget {
   _UnitState createState() => _UnitState();
 }
 
-class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
+class _UnitState extends State<Unit> with TickerProviderStateMixin{
   DrawerMenu _drawerMenu = DrawerMenu();
   RefreshToken _refreshToken = RefreshToken();
   CheckInternet _checkInternet = CheckInternet();
@@ -22,6 +23,7 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
   TabController _tabController;
   Future<M_Unit> _dataUnit;
   String _lastBid = '0';
+  final String _auctionSubmitType = 'tender';
 
   List<Widget> _tabList = <Widget>[
     Tab(child: Text('Info Unit')),
@@ -47,6 +49,17 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
 
     param['last_bid'] = _lastBid;
 
+    List<Widget> _tabPage = [
+      info.Info(data: param, detail: _dataUnit),
+      bid.Bid(data: param, detail: _dataUnit),
+    ];
+    
+    if (param['Online'].toString().trim() == _auctionSubmitType) {
+      _tabList.add(Tab(child:Text('Bidder')));
+      _tabPage.add(bidder.Bidder(data: param, detail: _dataUnit));
+    }
+    _tabController = TabController(vsync: this, length: _tabList.length);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
@@ -69,10 +82,7 @@ class _UnitState extends State<Unit> with SingleTickerProviderStateMixin{
         color: Colors.blueGrey.shade50,
         child: TabBarView(
           controller: _tabController,
-          children: [
-            info.Info(data: param, detail: _dataUnit),
-            bid.Bid(data: param, detail: _dataUnit),
-          ]
+          children: _tabPage,
         )
       )
     );

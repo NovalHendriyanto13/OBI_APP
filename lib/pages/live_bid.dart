@@ -227,25 +227,33 @@ class _LiveBidState extends State<LiveBid>{
           if (_data.length > 0) {
             _selectedNpl = _data[0]['NPL'];
           }
-          return  DropdownButtonFormField(
-            isExpanded: true,          
-            items: _data.map((e) {
-              return DropdownMenuItem(
-                child: Text(e["NPL"]),
-                value: e["NPL"], 
-              );
-            }).toList(),
-            hint: Text('Pilih NPL'),
-            onChanged: (selected) {
-              _selectedNpl = selected;
-            },
-            value: _selectedNpl,
-            decoration: InputDecoration(
-              hintText: 'Pilih NPL',
-              labelText: 'Pilih NPL',
-              fillColor: Colors.white,
-              contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0)),
+          return Padding(
+            padding: EdgeInsets.only(left: 5.0, bottom: 20.0),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18.0),
+                color: Colors.white,
+                border: Border.all()),
+              child: DropdownButtonFormField(
+                isExpanded: true,          
+                items: _data.map((e) {
+                  return DropdownMenuItem(
+                    child: Text(e["NPL"]),
+                    value: e["NPL"], 
+                  );
+                }).toList(),
+                hint: Text('Pilih NPL'),
+                onChanged: (selected) {
+                  _selectedNpl = selected;
+                },
+                value: _selectedNpl,
+                decoration: InputDecoration(
+                  hintText: 'Pilih NPL',
+                  fillColor: Colors.white,
+                  contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.0)),
+                )
+              )
             )
           );
         }
@@ -274,10 +282,10 @@ class _LiveBidState extends State<LiveBid>{
     }
 
     final btnSubmit = Padding(
-      padding: EdgeInsets.only(left: 3.0, right: 3.0),
+      padding: EdgeInsets.only(left: 3.0, right: 5.0, bottom: 20.0),
       child: ButtonTheme(
         minWidth: 200.0,
-        child: MaterialButton(
+        child: ElevatedButton(
           onPressed: () async{
             if (this._enableBid == false) {
               Toast.show('Status Anda Tidak Aktif', context, duration: Toast.LENGTH_LONG , gravity:  Toast.BOTTOM, backgroundColor: Colors.orange);
@@ -313,7 +321,16 @@ class _LiveBidState extends State<LiveBid>{
             }
           },
           child: buttonText(),
-          color: Colors.blue,
+          style: ButtonStyle(
+            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+            backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+                side: BorderSide(color: Colors.white),
+              )
+            )
+          ),
         ),
       )
     );
@@ -416,11 +433,11 @@ class _LiveBidState extends State<LiveBid>{
                 SizedBox(height: 8.0),
                 Row(
                   children: [
-                    Text('Eks : ' + unitInfo['GradeExterior'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                    Text('Eks : ' + unitInfo['GradeExterior'], style: TextStyle(fontSize: 15.0)),
                     Text(' | '),
-                    Text('Int : ' + unitInfo['GradeInterior'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                    Text('Int : ' + unitInfo['GradeInterior'], style: TextStyle(fontSize: 15.0)),
                     Text(' | '),
-                    Text('Msn :' + unitInfo['GradeMesin'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0))
+                    Text('Msn :' + unitInfo['GradeMesin'], style: TextStyle(fontSize: 15.0))
                   ],
                 ),
                 SizedBox(height: 8.0),
@@ -438,7 +455,7 @@ class _LiveBidState extends State<LiveBid>{
             ),
             
             Container(
-              color: Colors.grey,
+              color: Colors.red,
               child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -447,11 +464,11 @@ class _LiveBidState extends State<LiveBid>{
                       child: RichText(
                         textAlign: TextAlign.left,
                         text: TextSpan(
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: Colors.white),
                           children: [
                             TextSpan(
                               text: _panggilan,
-                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
+                              style: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold, fontSize: 20.0),
                             )
                           ] 
                         )
@@ -462,12 +479,12 @@ class _LiveBidState extends State<LiveBid>{
                       child: RichText(
                         textAlign: TextAlign.left,
                         text: TextSpan(
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: Colors.white),
                           children: [
-                            TextSpan(text: 'Harga Penawaran '),
+                            TextSpan(text: 'Harga Penawaran ', style: TextStyle(fontSize: 20.0)),
                             TextSpan(
                               text: 'Rp.' + _param['price'].toString(),
-                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20.0),
+                              style: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold, fontSize: 20.0),
                             ),
                           ] 
                         )
@@ -478,10 +495,13 @@ class _LiveBidState extends State<LiveBid>{
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(child: Text('Aktif Lelang')),
+                          Expanded(child: Padding(
+                            padding: EdgeInsets.only(left: 5.0),
+                            child: Text('Aktif Lelang', style: TextStyle(color: Colors.white)))
+                          ),
                           Expanded(
                             child: SwitchListTile(
-                              title: const Text('On/Off'),
+                              title: const Text('On/Off', style: TextStyle(color: Colors.white)),
                               value: _enableBid,
                               onChanged: (value) {
                                 setState(() {

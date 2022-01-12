@@ -40,7 +40,8 @@ dependencies:
   vibration: ^1.7.3
   audioplayer: ^0.8.1
   url_launcher: ^6.0.10
-
+  in_app_update: ^2.0.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

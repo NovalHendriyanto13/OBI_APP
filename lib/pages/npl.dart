@@ -36,6 +36,34 @@ class _NplState extends State<Npl> {
     Drawer _menu = _drawerMenu.initialize(context, Npl.tag);
     BottomNavigationBar _bottomNav = _bottomMenu.initialize(context, null);
 
+    Widget getNoLot(data) {
+      if (data['unit'] != null) {
+        return RichText(
+            text: TextSpan(
+              children: <TextSpan>[
+                TextSpan(text: 'No Lot : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                TextSpan(text: data['NoLot'], style: TextStyle(color: Colors.black))
+              ]
+            ),
+          );
+      }
+      return Text('');
+    }
+
+    Widget getUnit(data) {
+      if (data['unit'] != null) {
+        return RichText(
+            text: TextSpan(
+              children: <TextSpan>[
+                TextSpan(text: 'Unit : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                TextSpan(text: data['unit'][0]['Merk']+ ' ' +data['unit'][0]['Tipe'], style: TextStyle(color: Colors.black))
+              ]
+            ),
+          );
+      }
+      return Text('');
+    }
+
     final _dataList = FutureBuilder<M_Npl>(
       future: _dataNpl,
       builder: (context, snapshot) {
@@ -56,11 +84,55 @@ class _NplState extends State<Npl> {
                     subtitle: Column(
                       children: [
                         SizedBox(height:8.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('Auction : ' + _data[index]['IdAuctions'] )),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft, 
+                              child: RichText(
+                                text: TextSpan(
+                                  children: <TextSpan>[
+                                    TextSpan(text: 'Auction : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                    TextSpan(text: _data[index]['IdAuctions'], style: TextStyle(color: Colors.black))
+                                  ]
+                                ),
+                              )
+                            ),
+                            getNoLot(_data[index])
+                          ],
+                        ),
                         SizedBox(height:8.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('NPL : ' + _data[index]['NPL'] )),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft, 
+                              child: RichText(
+                                text: TextSpan(
+                                  children: <TextSpan>[
+                                    TextSpan(text: 'NPL : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                    TextSpan(text: _data[index]['NPL'], style: TextStyle(color: Colors.black))
+                                  ]
+                                ),
+                              )
+                            ),
+                            getUnit(_data[index])
+                          ],
+                        ),
                         SizedBox(height:8.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('Status : ' + _data[index]['Status'] )),
+                        Align(
+                            alignment: Alignment.centerLeft, 
+                            child: RichText(
+                              text: TextSpan(
+                                children: <TextSpan>[
+                                  TextSpan(text: 'Status : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                  TextSpan(text: _data[index]['Status'], style: TextStyle(color: Colors.black))
+                                ]
+                              ),
+                            )
+                          ),
                       ],
                     ),
                   ),

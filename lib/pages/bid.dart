@@ -66,19 +66,89 @@ class _BidState extends State<Bid> {
                         SizedBox(height:5.0),
                         Text(_data[index]['Merk'] + ' ' + _data[index]['Tipe'] + ' (' + _data[index]['Tahun'] + ')', style: TextStyle(fontWeight: FontWeight.bold)),
                         SizedBox(height:5.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('Lot : ' + _data[index]['NoLOT'] )),
+                        Align(
+                          alignment: Alignment.centerLeft, 
+                          child: RichText(
+                            text: TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text: 'No Lot : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                TextSpan(text: _data[index]['NoLOT'], style: TextStyle(color: Colors.black))
+                              ]
+                            ),
+                          )
+                        ),
                         SizedBox(height:5.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('No Polisi : ' + _data[index]['NoPolisi'] )),
+                        Align(
+                          alignment: Alignment.centerLeft, 
+                          child: RichText(
+                            text: TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text: 'No Polisi : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                TextSpan(text: _data[index]['NoPolisi'], style: TextStyle(color: Colors.black))
+                              ]
+                            ),
+                          )
+                        ),
                         SizedBox(height:5.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('Tanggal Penawaran : ' + _data[index]['BidTime'] )),
+                        Align(
+                          alignment: Alignment.centerLeft, 
+                          child: RichText(
+                            text: TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text: 'Tanggal Penawaran : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                TextSpan(text: _data[index]['BidTime'], style: TextStyle(color: Colors.black))
+                              ]
+                            ),
+                          )
+                        ),
                         SizedBox(height:5.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('Harga Penawaran: ' + NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(_data[index]['Nominal']))),
+                        Align(
+                          alignment: Alignment.centerLeft, 
+                          child: RichText(
+                            text: TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text: 'Harga Penawaran : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                TextSpan(text: NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(_data[index]['Nominal']), style: TextStyle(color: Colors.black))
+                              ]
+                            ),
+                          )
+                        ),
                         SizedBox(height:5.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('Tanggal Pemenang : ' + _data[index]['WinnerTime'] )),
+                        Align(
+                          alignment: Alignment.centerLeft, 
+                          child: RichText(
+                            text: TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text: 'Tanggal Pemenang : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                TextSpan(text: _data[index]['WinnerTime'], style: TextStyle(color: Colors.black))
+                              ]
+                            ),
+                          )
+                        ),
                         SizedBox(height: 5.0),
-                        Align(alignment: Alignment.centerLeft, child: Text('Harga Terbentuk : ' + _price)),
+                        Align(
+                          alignment: Alignment.centerLeft, 
+                          child: RichText(
+                            text: TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text: 'Harga Terbentuk : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                TextSpan(text: _price, style: TextStyle(color: Colors.black))
+                              ]
+                            ),
+                          )
+                        ),
                         SizedBox(height:5.0),
-                        Align(alignment: Alignment.centerRight, child: Text('Status : ' + _data[index]['statusbidx'] )),
+                        Align(
+                          alignment: Alignment.centerRight, 
+                          child: RichText(
+                            text: TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text: 'Status : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                TextSpan(text: _data[index]['statusbidx'], style: TextStyle(color: Colors.red))
+                              ]
+                            ),
+                          )
+                        ),
                       ],
                     ),
                   ),
