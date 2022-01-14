@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:obi_mobile/libraries/drawer_menu.dart';
 import 'package:obi_mobile/libraries/bottom_menu.dart';
 import 'package:obi_mobile/libraries/check_internet.dart';
@@ -64,6 +65,21 @@ class _NplState extends State<Npl> {
       return Text('');
     }
 
+    Widget getNominal(data) {
+      if (data['unit'] != null) {
+        String _price = data['unit'][0]['Nominal'] != null ? NumberFormat.simpleCurrency(locale: 'id', decimalDigits: 0).format(data['unit'][0]['Nominal']) : "";
+        return RichText(
+            text: TextSpan(
+              children: <TextSpan>[
+                TextSpan(text: 'Harga : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                TextSpan(text: _price, style: TextStyle(color: Colors.black))
+              ]
+            ),
+          );
+      }
+      return Text('');
+    }
+
     final _dataList = FutureBuilder<M_Npl>(
       future: _dataNpl,
       builder: (context, snapshot) {
@@ -122,17 +138,24 @@ class _NplState extends State<Npl> {
                           ],
                         ),
                         SizedBox(height:8.0),
-                        Align(
-                            alignment: Alignment.centerLeft, 
-                            child: RichText(
-                              text: TextSpan(
-                                children: <TextSpan>[
-                                  TextSpan(text: 'Status : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
-                                  TextSpan(text: _data[index]['Status'], style: TextStyle(color: Colors.black))
-                                ]
-                              ),
-                            )
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft, 
+                              child: RichText(
+                                text: TextSpan(
+                                  children: <TextSpan>[
+                                    TextSpan(text: 'Status : ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                                    TextSpan(text: _data[index]['Status'], style: TextStyle(color: Colors.black))
+                                  ]
+                                ),
+                              )
+                            ),
+                            getNominal(_data[index])
+                          ],
+                        ),
                       ],
                     ),
                   ),
